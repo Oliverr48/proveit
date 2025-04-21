@@ -1,0 +1,116 @@
+/* Main color styles */
+.gradient-text {
+    background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  
+  /* Button styles */
+  .btn-primary {
+    background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
+    transition: all 0.3s;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
+  }
+  
+  /* Card styles */
+  .card {
+    transition: all 0.3s;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Navigation link animation */
+  .nav-link {
+    position: relative;
+  }
+  .nav-link:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: #4f46e5;
+    transition: width 0.3s;
+  }
+  .nav-link:hover:after {
+    width: 100%;
+  }
+  
+  /* Making sure the page takes full height and footer sticks to bottom */
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  
+  /* Full height utility */
+  .full-height {
+    min-height: 100vh;
+  }
+  
+  /* Feature card styles */
+  .feature-card {
+    transition: all 0.2s;
+  }
+  .feature-card:hover {
+    transform: translateY(-3px);
+  }
+  
+  /* Feature icon container */
+  .feature-icon {
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Form input wrapper */
+  .input-wrapper {
+    position: relative;
+    width: 100%;
+  }
+  
+  /* Form input icon */
+  .input-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9ca3af;
+  }
+  
+  /* Form input field */
+  .input-field {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+  }
+  .input-field:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  }
+  
+  /* Mobile responsiveness */
+  @media (max-width: 768px) {
+    .mobile-order-2 {
+      order: 2;
+    }
+    .mobile-order-1 {
+      order: 1;
+      margin-bottom: 2rem;
+    }
+  }
