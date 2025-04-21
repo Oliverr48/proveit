@@ -9,3 +9,6 @@ from flask import render_template, request, redirect, url_for
 def render_index():
   # any args we may need should be specified render_template('index.html', classes etc. here)
   return render_template('index.html')
+@app.route('/dashboard')
+def render_home():
+  return render_template('dashboard.html')
