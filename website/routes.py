@@ -1,13 +1,15 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, request, redirect, url_for
 
-app = Blueprint('app', __name__)
+routes = Blueprint('routes', __name__)
 
-@app.route('/')
-def render_index():
-    # Render the index.html template
+@routes.route('/')
+def index():
     return render_template('index.html')
 
-@app.route('/dashboard')
-def render_home():
-    # Render the dashboard.html template
+@routes.route('/dashboard')
+def dashboard():
     return render_template('dashboard.html')
+
+@routes.route('/projects')
+def projects():
+    return render_template('project.html')

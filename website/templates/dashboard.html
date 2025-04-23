@@ -1,13 +1,204 @@
-<!-- Displayed when the user logs in? Putting this here now as this will probably require a projects class in models.py -->
- <!--- Temporarily edited just to resolve dashbaord.html displaying nothing, issue with routes and app.py configuration-->
- <html>
-<head>
-    <title>ProveIt</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body> 
-    <!----->
-    <h1> hello? </h1>
-</body>
+{% extends "base.html" %}
+
+{% block title %}Dashboard - ProjectPulse{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="mb-8">
+  <h2 class="text-2xl font-bold text-slate-800">Dashboard</h2>
+  <p class="text-slate-500 text-sm mt-1">Welcome back, John! Here's what's happening today.</p>
+</div>
+
+<!-- Top Stats -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+  <div class="dashboard-card bg-white p-5 rounded-xl shadow-sm">
+    <div class="flex items-center">
+      <div class="p-3 rounded-lg bg-indigo-50 text-indigo-600 mr-4">
+        <i class="fas fa-folder-open"></i>
+      </div>
+      <div>
+        <p class="text-sm text-slate-500">Total Projects</p>
+        <h3 class="text-2xl font-bold text-slate-800">3</h3>
+      </div>
+    </div>
+  </div>
+  <div class="dashboard-card bg-white p-5 rounded-xl shadow-sm">
+    <div class="flex items-center">
+      <div class="p-3 rounded-lg bg-green-50 text-green-600 mr-4">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div>
+        <p class="text-sm text-slate-500">Completed Tasks</p>
+        <h3 class="text-2xl font-bold text-slate-800">12/24</h3>
+      </div>
+    </div>
+  </div>
+  <div class="dashboard-card bg-white p-5 rounded-xl shadow-sm">
+    <div class="flex items-center">
+      <div class="p-3 rounded-lg bg-amber-50 text-amber-600 mr-4">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div>
+        <p class="text-sm text-slate-500">In Progress</p>
+        <h3 class="text-2xl font-bold text-slate-800">8</h3>
+      </div>
+    </div>
+  </div>
+  <div class="dashboard-card bg-white p-5 rounded-xl shadow-sm">
+    <div class="flex items-center">
+      <div class="p-3 rounded-lg bg-blue-50 text-blue-600 mr-4">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <div>
+        <p class="text-sm text-slate-500">Evidence Files</p>
+        <h3 class="text-2xl font-bold text-slate-800">32</h3>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Project Overview and Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+  <!-- Project Progress -->
+  <div class="lg:col-span-2 dashboard-card bg-white p-6 rounded-xl shadow-sm">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="font-bold text-slate-800">Project Progress</h3>
+      <div class="flex space-x-2">
+        <span class="px-3 py-1 text-xs bg-indigo-50 text-indigo-700 rounded-full">This Week</span>
+        <span class="px-3 py-1 text-xs bg-slate-100 text-slate-500 rounded-full">This Month</span>
+      </div>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <div class="flex justify-between mb-1">
+          <span class="text-sm font-medium text-slate-700">Website Redesign</span>
+          <span class="text-sm text-slate-500">70%</span>
+        </div>
+        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full bg-indigo-500" style="width: 70%"></div>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between mb-1">
+          <span class="text-sm font-medium text-slate-700">Marketing Campaign</span>
+          <span class="text-sm text-slate-500">100%</span>
+        </div>
+        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full bg-green-500" style="width: 100%"></div>
+        </div>
+      </div>
+      <div>
+        <div class="flex justify-between mb-1">
+          <span class="text-sm font-medium text-slate-700">App Development</span>
+          <span class="text-sm text-slate-500">30%</span>
+        </div>
+        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+          <div class="h-full bg-amber-500" style="width: 30%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Recent Activity -->
+  <div class="dashboard-card bg-white p-6 rounded-xl shadow-sm">
+    <h3 class="font-bold text-slate-800 mb-6">Recent Activity</h3>
+    <div class="space-y-4">
+      <div class="relative pl-6">
+        <span class="activity-dot bg-green-500"></span>
+        <p class="text-sm font-medium text-slate-700">Task completed</p>
+        <p class="text-xs text-slate-500">Mobile navigation design</p>
+        <p class="text-xs text-slate-400 mt-1">Today, 10:30 AM</p>
+      </div>
+      <div class="relative pl-6">
+        <span class="activity-dot bg-indigo-500"></span>
+        <p class="text-sm font-medium text-slate-700">File uploaded</p>
+        <p class="text-xs text-slate-500">Homepage mockup.jpg</p>
+        <p class="text-xs text-slate-400 mt-1">Today, 9:15 AM</p>
+      </div>
+      <div class="relative pl-6">
+        <span class="activity-dot bg-amber-500"></span>
+        <p class="text-sm font-medium text-slate-700">Task assigned</p>
+        <p class="text-xs text-slate-500">API integration</p>
+        <p class="text-xs text-slate-400 mt-1">Yesterday, 2:45 PM</p>
+      </div>
+      <div class="relative pl-6">
+        <span class="activity-dot bg-red-500"></span>
+        <p class="text-sm font-medium text-slate-700">Project delayed</p>
+        <p class="text-xs text-slate-500">App Development</p>
+        <p class="text-xs text-slate-400 mt-1">Yesterday, 10:20 AM</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Upcoming Deadlines -->
+<div class="dashboard-card bg-white p-6 rounded-xl shadow-sm">
+  <div class="flex justify-between items-center mb-6">
+    <h3 class="font-bold text-slate-800">Upcoming Deadlines</h3>
+    <a href="#" class="text-sm text-indigo-600 hover:underline">View All</a>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full">
+      <thead>
+        <tr>
+          <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3">Task</th>
+          <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3">Project</th>
+          <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3">Assignee</th>
+          <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3">Due Date</th>
+          <th class="text-left text-xs font-semibold text-slate-500 uppercase tracking-wider pb-3">Status</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <tr>
+          <td class="py-3">
+            <p class="text-sm font-medium text-slate-800">Implement responsive design</p>
+          </td>
+          <td class="py-3">
+            <p class="text-sm text-slate-600">Website Redesign</p>
+          </td>
+          <td class="py-3">
+            <div class="flex items-center">
+              <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-medium">JD</div>
+              <span class="ml-2 text-sm text-slate-600">John Doe</span>
+            </div>
+          </td>
+          <td class="py-3">
+            <p class="text-sm text-slate-600">Apr 15, 2025</p>
+          </td>
+          <td class="py-3">
+            <span class="px-2 py-1 text-xs bg-indigo-50 text-indigo-700 rounded-full">In Progress</span>
+          </td>
+        </tr>
+        <tr>
+          <td class="py-3">
+            <p class="text-sm font-medium text-slate-800">User authentication flow</p>
+          </td>
+          <td class="py-3">
+            <p class="text-sm text-slate-600">App Development</p>
+          </td>
+          <td class="py-3">
+            <div class="flex items-center">
+              <div class="w-6 h-6 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-medium">AS</div>
+              <span class="ml-2 text-sm text-slate-600">Alice Smith</span>
+            </div>
+          </td>
+          <td class="py-3">
+            <p class="text-sm text-slate-600">Jun 30, 2025</p>
+          </td>
+          <td class="py-3">
+            <span class="px-2 py-1 text-xs bg-amber-50 text-amber-700 rounded-full">Pending</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

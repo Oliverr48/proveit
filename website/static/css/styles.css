@@ -1,116 +1,63 @@
-/* Main color styles */
-.gradient-text {
-    background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  
-  /* Button styles */
-  .btn-primary {
-    background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
-    transition: all 0.3s;
-  }
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3);
-  }
-  
-  /* Card styles */
-  .card {
-    transition: all 0.3s;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
-  }
-  .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Navigation link animation */
-  .nav-link {
-    position: relative;
-  }
-  .nav-link:after {
-    content: '';
-    position: absolute;
-    width: 0;
-    height: 2px;
-    bottom: -4px;
-    left: 0;
-    background-color: #4f46e5;
-    transition: width 0.3s;
-  }
-  .nav-link:hover:after {
-    width: 100%;
-  }
-  
-  /* Making sure the page takes full height and footer sticks to bottom */
-  html, body {
-    height: 100%;
-    margin: 0;
-  }
-  
-  /* Full height utility */
-  .full-height {
-    min-height: 100vh;
-  }
-  
-  /* Feature card styles */
-  .feature-card {
-    transition: all 0.2s;
-  }
-  .feature-card:hover {
-    transform: translateY(-3px);
-  }
-  
-  /* Feature icon container */
-  .feature-icon {
-    width: 3rem;
-    height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-  }
-  
-  /* Form input wrapper */
-  .input-wrapper {
-    position: relative;
-    width: 100%;
-  }
-  
-  /* Form input icon */
-  .input-icon {
-    position: absolute;
-    left: 0.75rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #9ca3af;
-  }
-  
-  /* Form input field */
-  .input-field {
-    width: 100%;
-    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    font-size: 0.875rem;
-    transition: all 0.2s;
-  }
-  .input-field:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-  }
-  
-  /* Mobile responsiveness */
-  @media (max-width: 768px) {
-    .mobile-order-2 {
-      order: 2;
-    }
-    .mobile-order-1 {
-      order: 1;
-      margin-bottom: 2rem;
-    }
-  }
+/* Common styles used across all pages */
+
+/* Navigation styles */
+.nav-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.nav-item:hover:not(.active) {
+  background-color: #f1f5f9;
+}
+
+.nav-item.active {
+  background-color: #eef2ff;
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+/* Button styles */
+.btn-primary {
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+/* Search input styles */
+.search-input:focus {
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+/* Progress dots - common styles */
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.progress-dot.completed { 
+  background-color: #10b981; 
+}
+
+.progress-dot.pending { 
+  background-color: #f59e0b; 
+}
+
+.progress-dot.not-started { 
+  background-color: #e5e7eb; 
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
