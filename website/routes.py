@@ -1,4 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for
+from .models import Project
+
 
 routes = Blueprint('routes', __name__)
 
@@ -12,4 +14,7 @@ def dashboard():
 
 @routes.route('/projects')
 def projects():
-    return render_template('project.html')
+    #Get the projs from the DB 
+    projects = Project.query.all()
+    print("Got the projects!")
+    return render_template('project.html', projects=projects)
