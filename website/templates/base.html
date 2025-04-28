@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}ProjectPulse{% endblock %}</title>
+  <title>{% block title %}ProveIt{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -36,7 +36,7 @@
         <div class="w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center">
           <span class="text-lg font-bold">P</span>
         </div>
-        <span class="ml-3 text-lg font-bold text-gray-800">ProjectPulse</span>
+        <span class="ml-3 text-lg font-bold text-gray-800">ProveIt</span>
       </div>
       
       <!-- Navigation -->
@@ -50,9 +50,9 @@
           <span>Projects</span>
           <span class="ml-auto bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">3</span>
         </a>
-        <a href="/team" class="nav-item flex items-center px-4 py-3 text-slate-700 {% if request.path == '/team' %}active{% endif %}">
+        <a href="/inbox" class="nav-item flex items-center px-4 py-3 text-slate-700 {% if request.path == '/team' %}active{% endif %}">
           <i class="fas fa-users mr-3 {% if request.path == '/team' %}text-indigo-600{% else %}text-slate-500{% endif %}"></i>
-          <span>Team</span>
+          <span>Inbox</span>
         </a>
         <a href="/analytics" class="nav-item flex items-center px-4 py-3 text-slate-700 {% if request.path == '/analytics' %}active{% endif %}">
           <i class="fas fa-chart-bar mr-3 {% if request.path == '/analytics' %}text-indigo-600{% else %}text-slate-500{% endif %}"></i>
