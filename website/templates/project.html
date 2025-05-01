@@ -27,7 +27,7 @@
       </div>
       <div>
         <p class="text-sm text-slate-500">Active Projects</p>
-        <h3 class="text-2xl font-bold text-slate-800">3</h3>
+        <h3 class="text-2xl font-bold text-slate-800">{%for project in projects%}{%if loop.first%}{{loop.length}}{%endif%}{%endfor%}</h3>
       </div>
     </div>
   </div>
@@ -38,7 +38,7 @@
       </div>
       <div>
         <p class="text-sm text-slate-500">Tasks Completed</p>
-        <h3 class="text-2xl font-bold text-slate-800">12</h3>
+        <h3 class="text-2xl font-bold text-slate-800">{%for task in comTasks%}{%if loop.first%}{{loop.length}}{%endif%}{%endfor%}</h3>
       </div>
     </div>
   </div>
