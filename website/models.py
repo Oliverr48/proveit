@@ -14,7 +14,10 @@ class Project(db.Model):
 
     @property
     def progress(self): 
-        return (self.tasksCompleted / self.tasksActive) * 100 
+        if self.tasksActive == 0 and self.tasksCompleted == 0:
+            return 0
+        else:
+            return (self.tasksCompleted / self.tasksActive) * 100 
 
     def __str__(self):
         return f"Project: {self.name}, Description: {self.description}, Start Date: {self.dueDate}"
