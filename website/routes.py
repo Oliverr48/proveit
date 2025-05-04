@@ -13,7 +13,7 @@ def index():
 @login_required
 def dashboard():
     projects = Project.query.all()
-    comTasks = Task.query.filter_by(status=1)
+    comTasks = Task.query.filter_by(status=1).all()
     totalTasks = Task.query.all()
     return render_template('dashboard.html', user=current_user, projects=projects, comTasks=comTasks, totalTasks=totalTasks)
 
@@ -51,9 +51,48 @@ def submitNewProject():
 
     return jsonify({'message': 'Project created successfully'})
 
+@routes.route('/submitAddTask', methods=['POST'])
+def submitAddTask():
+    # Get the form data
+    print("We are here in the task submit bit!")
+    name = request.form['taskName']
+    collabs = request.form['taskCollabs']
+    dueDate = request.form['taskDueDate']
+    parentProject = request.form.get('project_id')  # Get the parent project ID from the form
+
+    project = Project.query.get_or_404(parentProject)
+    project.tasksActive += 1  # Increment the active tasks count for the project
+
+    # Create a new task instance
+    new_task = Task(
+        name=name,
+        collabs=collabs,
+        dueDate=dueDate,
+        parentProject=parentProject,
+        status=0  # Assuming you want to initialize this to 0 (in progress) when creating a new task
+    )
+    print("New task created: ", new_task.name, new_task.collabs, new_task.dueDate, new_task.parentProject)
+    # Add the new task to the database session and commit
+    db.session.add(new_task)
+    db.session.commit()
+
+    return jsonify({'message': 'Task created successfully'})
+
 @routes.route('/project_view/<int:project_id>')
 def project_view(project_id):
     project = Project.query.get_or_404(project_id)
     tasks = Task.query.filter_by(parentProject=project_id).all()
     return render_template('project_view.html', project=project, tasks=tasks, user=current_user)
 
+@routes.route('/completeTask', methods=['POST'])
+def completeTask():
+    task_id = request.form.get('task_id')
+    task = Task.query.get_or_404(task_id)
+    project = Project.query.get_or_404(task.parentProject)
+
+    # Update the task status to completed
+    task.status = 1
+    project.tasksActive -= 1
+    project.tasksCompleted += 1
+    db.session.commit()
+    return jsonify({'message': 'Task completed successfully'})

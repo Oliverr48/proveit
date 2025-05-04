@@ -14,18 +14,21 @@ class Project(db.Model):
 
     @property
     def progress(self): 
-        if self.tasksActive == 0 and self.tasksCompleted == 0:
+        if (self.tasksActive == 0 and self.tasksCompleted == 0):
             return 0
         else:
-            return (self.tasksCompleted / self.tasksActive) * 100 
+            print (self.tasksCompleted / (self.tasksActive + self.tasksCompleted) * 100)
+            return (self.tasksCompleted / (self.tasksActive + self.tasksCompleted)*100)  
 
     def __str__(self):
         return f"Project: {self.name}, Description: {self.description}, Start Date: {self.dueDate}"
 
 class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     parentProject = db.Column(db.String(100), db.ForeignKey('project.id'), nullable=False)
-    name = db.Column(db.String(100), primary_key=True)
-    description = db.Column(db.String(200), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    # The below will maybe have to be a drop down; a list of users??
+    collabs = db.Column(db.String(200), nullable=False)
     dueDate = db.Column(db.String(20), nullable=False)
     #0 represents in progress, 1 represents completed
     status = db.Column(db.Integer, nullable=False)
