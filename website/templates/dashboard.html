@@ -33,7 +33,7 @@
       </div>
       <div>
         <p class="text-sm text-slate-500">Completed Tasks</p>
-        <h3 class="text-2xl font-bold text-slate-800">{%for task in comTasks%}{%if loop.first%}{{loop.length}}{%endif%}{%endfor%} / {%for task in totalTasks%}{%if loop.first%}{{loop.length}}{%endif%}{%endfor%}</h3>
+        <h3 class="text-2xl font-bold text-slate-800">{{comTasks|length}} / {{totalTasks|length}}</h3>
       </div>
     </div>
   </div>
@@ -44,7 +44,7 @@
       </div>
       <div>
         <p class="text-sm text-slate-500">In Progress</p>
-        <h3 class="text-2xl font-bold text-slate-800">8</h3>
+        <h3 class="text-2xl font-bold text-slate-800"> {{ totalTasks|length - comTasks|length }} </h3>
       </div>
     </div>
   </div>
@@ -110,25 +110,25 @@
       <div class="relative pl-6">
         <span class="activity-dot bg-green-500"></span>
         <p class="text-sm font-medium text-slate-700">Task completed</p>
-        <p class="text-xs text-slate-500">Mobile navigation design</p>
+        <p class="text-xs text-slate-500">  Mobile navigation design</p>
         <p class="text-xs text-slate-400 mt-1">Today, 10:30 AM</p>
       </div>
       <div class="relative pl-6">
         <span class="activity-dot bg-indigo-500"></span>
         <p class="text-sm font-medium text-slate-700">File uploaded</p>
-        <p class="text-xs text-slate-500">Homepage mockup.jpg</p>
+        <p class="text-xs text-slate-500">  Homepage mockup.jpg</p>
         <p class="text-xs text-slate-400 mt-1">Today, 9:15 AM</p>
       </div>
       <div class="relative pl-6">
         <span class="activity-dot bg-amber-500"></span>
-        <p class="text-sm font-medium text-slate-700">Task assigned</p>
+        <p class="text-sm font-medium text-slate-700"> Task assigned</p>
         <p class="text-xs text-slate-500">API integration</p>
         <p class="text-xs text-slate-400 mt-1">Yesterday, 2:45 PM</p>
       </div>
       <div class="relative pl-6">
         <span class="activity-dot bg-red-500"></span>
         <p class="text-sm font-medium text-slate-700">Project delayed</p>
-        <p class="text-xs text-slate-500">App Development</p>
+        <p class="text-xs text-slate-500"> App Development</p>
         <p class="text-xs text-slate-400 mt-1">Yesterday, 10:20 AM</p>
       </div>
     </div>

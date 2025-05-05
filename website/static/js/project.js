@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function() {
       type: 'POST',
       data: $(this).serialize(),
       success: function (response) {
-        alert('Project created successfully!');
+        //alert('Project created successfully!');
         modal.style.display = 'none';
         location.reload(); // Refresh to show the new project
       },
@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (newProjectBtn) {
       newProjectBtn.addEventListener('click', function () {
         // Show the modal
-        alert('New Project button clicked!');
+        //alert('New Project button clicked!');
         modal.style.display = 'block';
   
         // Close button listener
