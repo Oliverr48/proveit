@@ -1,0 +1,63 @@
+/* Common styles used across all pages */
+
+/* Navigation styles */
+.nav-item {
+  transition: all 0.2s ease;
+  border-radius: 8px;
+}
+
+.nav-item:hover:not(.active) {
+  background-color: #f1f5f9;
+}
+
+.nav-item.active {
+  background-color: #eef2ff;
+  color: #4f46e5;
+  font-weight: 500;
+}
+
+/* Button styles */
+.btn-primary {
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+/* Search input styles */
+.search-input:focus {
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+/* Progress dots - common styles */
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.progress-dot.completed { 
+  background-color: #10b981; 
+}
+
+.progress-dot.pending { 
+  background-color: #f59e0b; 
+}
+
+.progress-dot.not-started { 
+  background-color: #e5e7eb; 
+}
+
+/* Card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
