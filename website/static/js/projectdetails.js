@@ -14,8 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // FORM FOR NEW PROJETC MODAL 
 $('#addTaskForm').on('submit', function (e) {
-  var modal = document.getElementById('modalAddTask');
-
+    var modal = document.getElementById('modalAddTask');
     e.preventDefault();
     console.log('Form submitted!');
 
@@ -35,24 +34,23 @@ $('#addTaskForm').on('submit', function (e) {
   });
 
   function initializeAddTaskButton() {
-    const addTaskBtn = document.getElementById('addTaskBtn');
+    const newProjectBtn = document.querySelector('.btn-primary');
     var modal = document.getElementById('modalAddTask');
     
-    if (addTaskBtn) {
-      addTaskBtn.addEventListener('click', function () {
-
-        modal.classList.remove('hidden');
-        modal.style.display = 'flex';
+    if (newProjectBtn) {
+      newProjectBtn.addEventListener('click', function () {
+        // Show the modal
+        //alert('New Project button clicked!');
+        modal.style.display = 'block';
   
         // Close button listener
         modal.querySelector('#closeModalBtn').addEventListener('click', function () {
-
-          modal.classList.add('hidden');
           modal.style.display = 'none';
         });
+  
       });
     }
-}
+  }
 
   function initializeTaskCompleteButton() {
     const completeTaskBtn = document.getElementById('complTaskBtn'); 
