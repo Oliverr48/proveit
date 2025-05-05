@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Initialize the "New Project" button
     initializeNewProjectButton();
+
+    //Initialize the project detail view button
+
   });
   
   /**
@@ -81,17 +84,44 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
+// FORM FOR NEW PROJETC MODAL 
+  $('#newProjectForm').on('submit', function (e) {
+    var modal = document.getElementById('modalNewProject');
+    e.preventDefault();
+    console.log('Form submitted!');
+
+    $.ajax({
+      url: '/submitNewProject',
+      type: 'POST',
+      data: $(this).serialize(),
+      success: function (response) {
+        alert('Project created successfully!');
+        modal.style.display = 'none';
+        location.reload(); // Refresh to show the new project
+      },
+      error: function (error) {
+        alert('Error creating project: ' + error.responseText);
+      }
+    });
+  });
   /**
    * Initializes the new project button
    */
   function initializeNewProjectButton() {
     const newProjectBtn = document.querySelector('.btn-primary');
+    var modal = document.getElementById('modalNewProject');
     
     if (newProjectBtn) {
-      newProjectBtn.addEventListener('click', function() {
-        // In a real implementation, this would show a modal
-        // or redirect to a new project page
+      newProjectBtn.addEventListener('click', function () {
+        // Show the modal
         alert('New Project button clicked!');
+        modal.style.display = 'block';
+  
+        // Close button listener
+        modal.querySelector('#closeModalBtn').addEventListener('click', function () {
+          modal.style.display = 'none';
+        });
+  
       });
     }
   }
@@ -101,6 +131,5 @@ document.addEventListener('DOMContentLoaded', function() {
    * @param {string} projectId - The ID of the project to view
    */
   function viewProject(projectId) {
-    // In a real implementation, this would navigate to the project detail page
-    window.location.href = `/project-detail/${projectId}`;
+    
   }
