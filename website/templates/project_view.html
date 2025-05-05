@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Projects - ProveIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/project.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+
+<div class="flex justify-between items-center mb-8">
+    <div>
+      <h2 class="text-2xl font-bold text-slate-800">{{project.name}}</h2>
+      <p class="text-slate-500 text-sm mt-1">{{project.description}} | Due <b>{{project.dueDate}}</b></p>
+    </div>
+    <button class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" id="addTaskBtn">
+      <i class="fas fa-plus mr-2"></i> Add Task
+    </button>
+  </div>  
+  <div id = "modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+    <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
+      <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
+      <form id="addTaskForm">
+        <div class="mb-4">
+          <label for="taskName" class="block text-sm font-medium text-slate-700">Task Name</label>
+          <input type="text" id="taskName" name="taskName" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+        </div>
+        <div class="mb-4">
+          <label for="taskDueDate" class="block text-sm font-medium text-slate-700">Due Date</label>
+          <input type="date" id="taskDueDate" name="taskDueDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+        </div>
+        <div class="mb-4">
+          <label for="taskCollabs" class="block text-sm font-medium text-slate-700">Collaborators</label>
+          <textarea id="taskCollabs" name="taskCollabs" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+        </div>
+        <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
+        <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
+      </form>
+      <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+
+  <div class="w-3/4 h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200 mb-4">
+    <div class="h-full bg-indigo-500" style="width: {{ project.progress | default(0) }}%;"></div>
+  </div>
+  <span class="ml-2 text-xs text-slate-500">{{project.progress}}%</span>
+
+  <!-- Task Stats-->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow transition-shadow">
+        <div class="flex items-center">
+          <div class="p-3 rounded-lg bg-amber-50 text-amber-600 mr-4">
+            <i class="fas fa-clock"></i>
+          </div>
+          <div>
+            <p class="text-sm text-slate-500">Tasks Remaining</p>
+            <h3 class="text-2xl font-bold text-slate-800">{{project.tasksActive}}</h3>
+          </div>
+        </div>
+      </div>
+    <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow transition-shadow">
+      <div class="flex items-center">
+        <div class="p-3 rounded-lg bg-green-50 text-green-600 mr-4">
+          <i class="fas fa-check-circle"></i>
+        </div>
+        <div>
+          <p class="text-sm text-slate-500">Tasks Completed</p>
+          <h3 class="text-2xl font-bold text-slate-800">{{project.tasksCompleted}}</h3>
+        </div>
+      </div>
+    </div>
+    <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow transition-shadow">
+        <div class="flex items-center">
+          <div class="p-3 rounded-lg bg-green-50 text-green-600 mr-4">
+            <i class="fas fa-users"></i>
+          </div>
+          <div>
+            <p class="text-sm text-slate-500">Project Collaborators</p>
+            <h3 class="text-2xl font-bold text-slate-800">N/A</h3>
+          </div>
+        </div>
+      </div>
+    
+  </div>
+
+  <!-- Task List -->
+   <div class="space-y-4">
+    {% for task in tasks %}
+      <div class="w-3/4 bg-white p-5 rounded-xl shadow-sm hover:shadow transition-shadow">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <div class="p-3 rounded-lg bg-indigo-50 text-indigo-600 mr-4">
+              <i class="fas fa-tasks"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-slate-800">{{ task.name }}</h3>
+              <p class="text-sm text-slate-500">Due: {{ task.due_date }}</p>
+            </div>
+            <div class="ml-4">
+                {% if task.status == 1 %}
+                  <span class="text-green>500 text-xs font-semibold bg-green-100 px-2 py-1 rounded-full">Completed!</span>
+                {% elif task.status == 0 %}
+                 <button class="btn-primary px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" id="complTaskBtn" data-project-id = "{{project.id}}" data-task-id="{{ task.id }}">Complete!</button>
+                {% endif %}
+             </div> 
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+
+  
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/projectdetails.js') }}"></script>
+{% endblock %}

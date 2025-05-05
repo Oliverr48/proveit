@@ -1,0 +1,57 @@
+/* Dashboard specific styles */
+
+.dashboard-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Activity timeline dots */
+  .activity-dot {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    transform: translateY(-50%);
+  }
+  
+  /* Table styles */
+  th {
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #64748b;
+  }
+  
+  td {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  /* Status badge styles */
+  .status-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+  }
+  
+  .status-badge-primary {
+    background-color: #eef2ff;
+    color: #4f46e5;
+  }
+  
+  .status-badge-success {
+    background-color: #d1fae5;
+    color: #047857;
+  }
+  
+  .status-badge-warning {
+    background-color: #fff7ed;
+    color: #c2410c;
+  }
