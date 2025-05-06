@@ -1,49 +1,74 @@
-<h1>Sign Up</h1>
-<form method="POST">
-    <h3 align = "center">Create an account</h3>
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input 
-            type="email" 
-            class="form-control"
-            name="email" 
-            id="email" 
-            placeholder = "Enter your email" required
-        />
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - ProveIt</title>
+    <!-- Include your CSS here -->
+</head>
+<body>
+    <!-- Display flash messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     </div>
 
-    <div class="form-group">
-        <label for="userName">Username</label>
-        <input 
-            type="text" 
-            class="form-control"
-            name="userName" 
-            id="userName" 
-            placeholder = "Enter your username" required
-        />
-    </div>
+    <h1>Sign Up</h1>
+    <!-- The key fix: Adding the action attribute to the form -->
+    <form method="POST" action="/signup">
+        <h3 align="center">Create an account</h3>
+        <div class="form-group">
+            <label for="email">Email</label>
+            <input 
+                type="email" 
+                class="form-control"
+                name="email" 
+                id="email" 
+                placeholder="Enter your email" required
+            />
+        </div>
 
-    <div class="form-group">
-        <label for="password1">Password</label>
-        <input 
-            type="password" 
-            class="form-control"
-            name="password1" 
-            id="password1" 
-            placeholder = "Enter your password" required
-        />
-    </div>
+        <div class="form-group">
+            <label for="userName">Username</label>
+            <input 
+                type="text" 
+                class="form-control"
+                name="userName" 
+                id="userName" 
+                placeholder="Enter your username" required
+            />
+        </div>
 
-    <div class="form-group">
-        <label for="password2">Confirm Password</label>
-        <input 
-            type="password" 
-            class="form-control"
-            name="password2" 
-            id="password2" 
-            placeholder = "Confirm password" required
-        />
-    </div>
-    <br /> 
-    <button type="submit" class="btn btn-primary">Sign Up</button>
-</form>
+        <div class="form-group">
+            <label for="password1">Password</label>
+            <input 
+                type="password" 
+                class="form-control"
+                name="password1" 
+                id="password1" 
+                placeholder="Enter your password" required
+            />
+        </div>
+
+        <div class="form-group">
+            <label for="password2">Confirm Password</label>
+            <input 
+                type="password" 
+                class="form-control"
+                name="password2" 
+                id="password2" 
+                placeholder="Confirm password" required
+            />
+        </div>
+        <br /> 
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+    </form>
+</body>
+</html>
