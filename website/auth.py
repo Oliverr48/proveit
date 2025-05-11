@@ -28,7 +28,7 @@ def login():
             flash('Logged in successfully!', category='success')
             login_user(user, remember=True)
             
-            # This is the important line - redirect directly to dashboard
+            # redirect directly to dashboard
             return redirect(url_for('routes.dashboard'))
         else:
             flash('Login failed. Check your email and password.', category='error')
@@ -83,7 +83,6 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             flash('Account created successfully! Please log in.', category='success')
-            # The critical fix - use the most direct and reliable redirect
             return redirect('/')
         except Exception as e:
             db.session.rollback()
