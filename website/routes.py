@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, jsonif
 from .models import Project, Task
 from flask_login import login_required, current_user
 from . import db # Import the db object
+from website.models import Project, Task, Subtask  # Add Subtask here
 
 routes = Blueprint('routes', __name__)
 
@@ -34,8 +35,8 @@ def submitNewProject():
     name = request.form['projectName']
     description = request.form['projectDescription']
     dueDate = request.form['projectDueDate']
-    tasksActive = 0  # Assuming you want to initialize this to 0 when creating a new project
-    tasksCompleted = 0  # Assuming you want to initialize this to 0 when creating a new project
+    tasksActive = 0  
+    tasksCompleted = 0  
     # Create a new project instance
     new_project = Project(
         name=name,
@@ -69,7 +70,7 @@ def submitAddTask():
         collabs=collabs,
         dueDate=dueDate,
         parentProject=parentProject,
-        status=0  # Assuming you want to initialize this to 0 (in progress) when creating a new task
+        status=0  
     )
     print("New task created: ", new_task.name, new_task.collabs, new_task.dueDate, new_task.parentProject)
     # Add the new task to the database session and commit
@@ -96,3 +97,65 @@ def completeTask():
     project.tasksCompleted += 1
     db.session.commit()
     return jsonify({'message': 'Task completed successfully'})
+
+@routes.route('/task/<int:task_id>')
+@login_required
+def task_detail(task_id):
+    """
+    Display the detailed view of a specific task with evidence files
+    """
+    # Get the task by ID
+    task = Task.query.get_or_404(task_id)
+    
+    # Get the parent project
+    project = Project.query.get_or_404(task.parentProject)
+    
+    # Get subtasks for this task
+    subtasks = Subtask.query.filter_by(taskId=task_id).all()
+    
+    # For now, we're just simulating evidence files
+    evidence_files = []
+    
+    return render_template(
+        'task_detail.html',
+        task=task,
+        project=project,
+        subtasks=subtasks,
+        evidence_files=evidence_files,
+        user=current_user
+    )
+
+@routes.route('/create_subtask', methods=['POST'])
+def create_subtask():
+    # Get form data
+    task_id = request.form.get('taskId')
+    subtask_name = request.form.get('subtaskName')
+    
+    if not task_id or not subtask_name:
+        return jsonify({'status': 'error', 'message': 'Missing required fields'})
+    
+    # Create new subtask
+    new_subtask = Subtask(
+        name=subtask_name,
+        taskId=task_id,
+        status=0  
+    )
+    
+    db.session.add(new_subtask)
+    db.session.commit()
+    
+    return jsonify({'status': 'success', 'subtask': {'id': new_subtask.id, 'name': new_subtask.name}})
+
+@routes.route('/update_subtask_status', methods=['POST'])
+def update_subtask_status():
+    subtask_id = request.form.get('subtaskId')
+    status = request.form.get('status')
+    
+    if not subtask_id or status is None:
+        return jsonify({'status': 'error', 'message': 'Missing required fields'})
+    
+    subtask = Subtask.query.get_or_404(subtask_id)
+    subtask.status = int(status)
+    db.session.commit()
+    
+    return jsonify({'status': 'success'})

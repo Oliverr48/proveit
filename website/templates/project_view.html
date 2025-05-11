@@ -1,117 +1,451 @@
 {% extends "base.html" %}
 
-{% block title %}Projects - ProveIt{% endblock %}
+{% block title %}Task Management - ProveIt{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/project.css') }}">
+<style>
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .status-in-progress {
+    background-color: #fff8e6;
+    color: #b45309;
+  }
+  
+  .status-completed {
+    background-color: #ecfdf5;
+    color: #047857;
+  }
+  
+  .category-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #e0e7ff;
+    color: #4338ca;
+  }
+  
+  .avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 500;
+  }
+  
+  .avatar-jd {
+    background-color: #4f46e5;
+  }
+  
+  .avatar-bj {
+    background-color: #3b82f6;
+  }
+  
+  .subtask-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    margin-right: 0.5rem;
+  }
+  
+  .subtask-complete {
+    background-color: #d1fae5;
+    color: #059669;
+  }
+  
+  .subtask-incomplete {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+  }
+  
+  .evidence-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  
+  .evidence-modal-content {
+    background-color: white;
+    border-radius: 0.5rem;
+    max-width: 36rem;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.5rem;
+  }
+  
+  .file-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+  
+  .file-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    margin-right: 1rem;
+    font-weight: 500;
+  }
+  
+  .drop-zone {
+    border: 2px dashed #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+  
+  .drop-zone:hover {
+    border-color: #6366f1;
+    background-color: #f5f7ff;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<!-- Header -->
-
+<!-- Task Management Header -->
 <div class="flex justify-between items-center mb-8">
-    <div>
-      <h2 class="text-2xl font-bold text-slate-800">{{project.name}}</h2>
-      <p class="text-slate-500 text-sm mt-1">{{project.description}} | Due <b>{{project.dueDate}}</b></p>
-    </div>
-    <button class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" id="addTaskBtn">
-      <i class="fas fa-plus mr-2"></i> Add Task
-    </button>
-  </div>  
-  <div id = "modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-    <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
-      <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
-      <form id="addTaskForm">
-        <div class="mb-4">
-          <label for="taskName" class="block text-sm font-medium text-slate-700">Task Name</label>
-          <input type="text" id="taskName" name="taskName" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
-        </div>
-        <div class="mb-4">
-          <label for="taskDueDate" class="block text-sm font-medium text-slate-700">Due Date</label>
-          <input type="date" id="taskDueDate" name="taskDueDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
-        </div>
-        <div class="mb-4">
-          <label for="taskCollabs" class="block text-sm font-medium text-slate-700">Collaborators</label>
-          <textarea id="taskCollabs" name="taskCollabs" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-        </div>
-        <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
-        <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
-      </form>
-      <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-    </div>
-  </div>
+  <h1 class="text-2xl font-bold text-gray-800">Task Management</h1>
+  <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="newTaskBtn">
+    <span class="mr-2">●</span> New Task
+  </button>
+</div>
 
-  <div class="w-3/4 h-4 bg-slate-100 rounded-full overflow-hidden border border-slate-200 mb-4">
-    <div class="h-full bg-indigo-500" style="width: {{ project.progress | default(0) }}%;"></div>
-  </div>
-  <span class="ml-2 text-xs text-slate-500">{{project.progress}}%</span>
-
-  <!-- Task Stats-->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow transition-shadow">
-        <div class="flex items-center">
-          <div class="p-3 rounded-lg bg-amber-50 text-amber-600 mr-4">
-            <i class="fas fa-clock"></i>
-          </div>
-          <div>
-            <p class="text-sm text-slate-500">Tasks Remaining</p>
-            <h3 class="text-2xl font-bold text-slate-800">{{project.tasksActive}}</h3>
-          </div>
-        </div>
+<!-- Task Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+  {% for task in tasks %}
+  <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow transition-all duration-200" data-task-id="{{ task.id }}">
+    <!-- Task Header -->
+    <div class="flex justify-between mb-3">
+      <div class="flex space-x-2">
+        <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
+          {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
+        </span>
+        <span class="category-badge">{{ task.category or 'Frontend' }}</span>
       </div>
-    <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow transition-shadow">
-      <div class="flex items-center">
-        <div class="p-3 rounded-lg bg-green-50 text-green-600 mr-4">
-          <i class="fas fa-check-circle"></i>
-        </div>
-        <div>
-          <p class="text-sm text-slate-500">Tasks Completed</p>
-          <h3 class="text-2xl font-bold text-slate-800">{{project.tasksCompleted}}</h3>
-        </div>
-      </div>
+      <div class="text-sm text-gray-500">Due: {{ task.dueDate }}</div>
     </div>
-    <div class="bg-white p-5 rounded-xl shadow-sm hover:shadow transition-shadow">
-        <div class="flex items-center">
-          <div class="p-3 rounded-lg bg-green-50 text-green-600 mr-4">
-            <i class="fas fa-users"></i>
-          </div>
-          <div>
-            <p class="text-sm text-slate-500">Project Collaborators</p>
-            <h3 class="text-2xl font-bold text-slate-800">N/A</h3>
-          </div>
-        </div>
-      </div>
     
+    <!-- Task Title & Description -->
+    <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ task.name }}</h3>
+    <p class="text-gray-600 text-sm mb-4">{{ task.description or 'No description provided.' }}</p>
+    
+    <!-- Assignee -->
+    <div class="flex items-center mb-4">
+      <div class="avatar {{ 'avatar-jd' if 'John' in task.collabs else 'avatar-bj' }}">
+        {{ task.collabs[0:2] if task.collabs else 'JD' }}
+      </div>
+      <span class="ml-2 text-sm text-gray-600">{{ task.collabs }}</span>
+    </div>
+    
+    <!-- Subtasks Summary -->
+    <div class="mb-3">
+      <div class="text-sm text-gray-500">Subtasks ({% if task.subtask_list %}{{ task.subtask_list|length }}{% else %}0{% endif %})</div>
+      {% if task.subtask_list %}
+        {% for subtask in task.subtask_list[:3] %}
+        <div class="flex items-center mt-2">
+          <div class="subtask-icon {{ 'subtask-complete' if subtask.status == 1 else 'subtask-incomplete' }}">
+            {% if subtask.status == 1 %}✓{% else %}-{% endif %}
+          </div>
+          <span class="text-sm text-gray-700">{{ subtask.name }}</span>
+        </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    
+    <!-- View Details Link -->
+    <a href="{{ url_for('routes.task_detail', task_id=task.id) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View Details →</a>
   </div>
+  {% endfor %}
+</div>
 
-  <!-- Task List -->
-   <div class="space-y-4">
-    {% for task in tasks %}
-      <div class="w-3/4 bg-white p-5 rounded-xl shadow-sm hover:shadow transition-shadow">
+<!-- Task Detail View (visible when viewing a single task) -->
+{% if selected_task %}
+<div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+  <!-- Breadcrumb -->
+  <div class="flex items-center mb-6 text-sm text-gray-500">
+    <a href="{{ url_for('routes.projects') }}" class="hover:text-indigo-600">Projects</a>
+    <span class="mx-2">›</span>
+    <a href="{{ url_for('routes.project_view', project_id=project.id) }}" class="hover:text-indigo-600">{{ project.name }}</a>
+    <span class="mx-2">›</span>
+    <span>{{ selected_task.name }}</span>
+  </div>
+  
+  <!-- Task Header -->
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-3">{{ selected_task.name }}</h2>
+    <div class="flex space-x-3">
+      <span class="status-badge {{ 'status-completed' if selected_task.status == 1 else 'status-in-progress' }}">
+        {% if selected_task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
+      </span>
+      <span class="category-badge">{{ selected_task.category or 'Frontend' }}</span>
+    </div>
+  </div>
+  
+  <!-- Assignee info in top right -->
+  <div class="absolute top-6 right-6 flex items-center">
+    <div class="avatar {{ 'avatar-jd' if 'John' in selected_task.collabs else 'avatar-bj' }}">
+      {{ selected_task.collabs[0:2] if selected_task.collabs else 'JD' }}
+    </div>
+    <div class="ml-2">
+      <div class="text-sm font-medium">{{ selected_task.collabs }}</div>
+      <div class="text-xs text-gray-500">{{ selected_task.collabs }}@example.com</div>
+    </div>
+  </div>
+  
+  <!-- Description -->
+  <div class="mb-8">
+    <h3 class="text-lg font-medium text-gray-800 mb-2">Description</h3>
+    <div class="bg-gray-50 p-4 rounded-lg">
+      <p class="text-gray-700">{{ selected_task.description or 'No description provided.' }}</p>
+    </div>
+  </div>
+  
+  <!-- Subtasks -->
+  <div class="mb-8">
+    <h3 class="text-lg font-medium text-gray-800 mb-3">Subtasks</h3>
+    
+    {% if selected_task.subtask_list %}
+      <div class="space-y-4">
+        {% for subtask in selected_task.subtask_list %}
         <div class="flex items-center justify-between">
           <div class="flex items-center">
-            <div class="p-3 rounded-lg bg-indigo-50 text-indigo-600 mr-4">
-              <i class="fas fa-tasks"></i>
+            <div class="subtask-icon {{ 'subtask-complete' if subtask.status == 1 else 'subtask-incomplete' }}">
+              {% if subtask.status == 1 %}✓{% else %}-{% endif %}
             </div>
-            <div>
-              <h3 class="text-lg font-bold text-slate-800">{{ task.name }}</h3>
-              <p class="text-sm text-slate-500">Due: {{ task.due_date }}</p>
-            </div>
-            <div class="ml-4">
-                {% if task.status == 1 %}
-                  <span class="text-green>500 text-xs font-semibold bg-green-100 px-2 py-1 rounded-full">Completed!</span>
-                {% elif task.status == 0 %}
-                 <button class="btn-primary px-3 py-1 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" id="complTaskBtn" data-project-id = "{{project.id}}" data-task-id="{{ task.id }}">Complete!</button>
-                {% endif %}
-             </div> 
+            <span class="text-gray-800">{{ subtask.name }}</span>
           </div>
+          
+          <a href="#" class="text-indigo-600 hover:text-indigo-800 text-sm view-files-btn" data-subtask-id="{{ subtask.id }}">
+            View Files
+          </a>
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-gray-500">No subtasks yet.</p>
+    {% endif %}
+  </div>
+  
+  <!-- Upload Evidence -->
+  <div class="mb-4">
+    <h3 class="text-lg font-medium text-gray-800 mb-3">Upload Evidence</h3>
+    
+    <div class="drop-zone" id="drop-zone">
+      <div class="mb-3">
+        <!-- Upload icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+      </div>
+      <p class="text-gray-600 mb-1">Drag files here or click to upload</p>
+      <p class="text-gray-500 text-sm">Accepted formats: PNG, JPG, PDF, TXT, ZIP (Max: 10MB)</p>
+    </div>
+    
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+      Upload & Complete
+    </button>
+  </div>
+</div>
+
+<!-- Evidence Files Modal (hidden by default) -->
+<div class="evidence-modal hidden" id="evidence-modal">
+  <div class="evidence-modal-content">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800">Evidence Files</h3>
+        <p class="text-sm text-gray-500" id="evidence-modal-title">Task: Implement responsive design > Create mobile navigation menu</p>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600" id="close-evidence-modal">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+    
+    <!-- File List -->
+    <div class="mb-6">
+      <div class="file-item">
+        <div class="file-icon">PDF</div>
+        <div class="flex-1">
+          <div class="text-sm font-medium text-gray-800">mobile-nav-code.pdf</div>
+          <div class="text-xs text-gray-500">245KB • Uploaded by John Doe on Apr 2, 2025</div>
+        </div>
+        <button class="text-gray-400 hover:text-gray-600 ml-4">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="file-item">
+        <div class="file-icon">IMG</div>
+        <div class="flex-1">
+          <div class="text-sm font-medium text-gray-800">nav-screenshot.jpg</div>
+          <div class="text-xs text-gray-500">1.2MB • Uploaded by John Doe on Apr 2, 2025</div>
+        </div>
+        <div class="flex items-center">
+          <button class="text-gray-400 hover:text-gray-600 mx-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+          </button>
+          <button class="text-gray-400 hover:text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+          </button>
         </div>
       </div>
-    {% endfor %}
-
-  
+    </div>
+    
+    <!-- Upload Area -->
+    <div class="drop-zone" id="modal-drop-zone">
+      <p class="text-gray-600">Drop new evidence files here</p>
+    </div>
+    
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+      Browse Files
+    </button>
+  </div>
+</div>
+{% endif %}
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/projectdetails.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Task detail toggle
+  const viewDetailLinks = document.querySelectorAll('.view-task-btn');
+  viewDetailLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const taskId = this.closest('[data-task-id]').dataset.taskId;
+      window.location.href = `/task/${taskId}`;
+    });
+  });
+  
+  // Evidence files modal
+  const viewFilesButtons = document.querySelectorAll('.view-files-btn');
+  const evidenceModal = document.getElementById('evidence-modal');
+  const closeEvidenceModal = document.getElementById('close-evidence-modal');
+  
+  viewFilesButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const subtaskId = this.dataset.subtaskId;
+      const subtaskName = this.closest('div').querySelector('span').textContent.trim();
+      
+      // Update modal title
+      document.getElementById('evidence-modal-title').textContent = `Task: ${document.title} > ${subtaskName}`;
+      
+      // Show modal
+      evidenceModal.classList.remove('hidden');
+    });
+  });
+  
+  if (closeEvidenceModal) {
+    closeEvidenceModal.addEventListener('click', function() {
+      evidenceModal.classList.add('hidden');
+    });
+  }
+  
+  // File upload functionality
+  const dropZones = document.querySelectorAll('.drop-zone');
+  
+  dropZones.forEach(zone => {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      zone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      zone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      zone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      zone.classList.add('border-indigo-500', 'bg-indigo-50');
+    }
+    
+    function unhighlight() {
+      zone.classList.remove('border-indigo-500', 'bg-indigo-50');
+    }
+    
+    zone.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const files = e.dataTransfer.files;
+      // Handle file upload 
+      console.log('Files dropped:', files);
+      
+      if (files.length > 0) {
+        alert(`${files.length} file(s) selected for upload`);
+      }
+    }
+    
+    zone.addEventListener('click', function() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.multiple = true;
+      fileInput.click();
+      
+      fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          console.log('Files selected:', this.files);
+          alert(`${this.files.length} file(s) selected for upload`);
+        }
+      });
+    });
+  });
+  
+  // New Task button
+  const newTaskBtn = document.getElementById('newTaskBtn');
+  if (newTaskBtn) {
+    newTaskBtn.addEventListener('click', function() {
+      alert('New Task form would open here');
+    });
+  }
+});
+</script>
 {% endblock %}
