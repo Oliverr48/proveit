@@ -28,7 +28,7 @@ def login():
             flash('Logged in successfully!', category='success')
             login_user(user, remember=True)
             
-            # This is the important line - redirect directly to dashboard
+            # redirect directly to dashboard
             return redirect(url_for('routes.dashboard'))
         else:
             flash('Login failed. Check your email and password.', category='error')
@@ -43,6 +43,8 @@ def login():
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
+        first_name = request.form.get('firstName')
+        last_name = request.form.get('lastName')
         email = request.form.get('email')
         username = request.form.get('userName')
         password1 = request.form.get('password1')
@@ -75,15 +77,15 @@ def signup():
             return render_template('signup.html')
             
         # If no errors, create the user and redirect
-        new_user = User(email=email, 
-                      username=username, 
-                      password=generate_password_hash(password1, method='pbkdf2:sha256', salt_length=16))
+
+        new_user = User(firstName=first_name, lastName=last_name,
+            email=email, username=username, 
+            password=generate_password_hash(password1, method='pbkdf2:sha256', salt_length=16))
         
         try:
             db.session.add(new_user)
             db.session.commit()
             flash('Account created successfully! Please log in.', category='success')
-            # The critical fix - use the most direct and reliable redirect
             return redirect('/')
         except Exception as e:
             db.session.rollback()

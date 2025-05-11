@@ -1,0 +1,95 @@
+/* website/static/css/tasks.css */
+
+/* Status badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .status-in-progress {
+    background-color: #fff8e6;
+    color: #b45309;
+  }
+  
+  .status-completed {
+    background-color: #ecfdf5;
+    color: #047857;
+  }
+  
+  /* Category badge */
+  .category-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #e0e7ff;
+    color: #4338ca;
+  }
+  
+  /* Subtask styling */
+  .subtask-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 9999px;
+    margin-right: 0.5rem;
+  }
+  
+  .subtask-complete {
+    background-color: #d1fae5;
+    color: #059669;
+  }
+  
+  .subtask-incomplete {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+  }
+  
+  /* Modal */
+  .evidence-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 50;
+  }
+  
+  /* File upload area */
+  .drop-zone {
+    border: 2px dashed #e5e7eb;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    text-align: center;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+  
+  .drop-zone:hover {
+    border-color: #6366f1;
+    background-color: #f5f7ff;
+  }
+  
+  .file-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f3f4f6;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    margin-right: 0.75rem;
+  }

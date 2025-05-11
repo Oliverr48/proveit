@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}{{ task.name }} - ProveIt{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tasks.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb -->
+<div class="flex items-center mb-4 text-sm text-gray-500">
+  <a href="{{ url_for('routes.projects') }}" class="hover:text-indigo-600">Projects</a>
+  <span class="mx-2">›</span>
+  <a href="{{ url_for('routes.project_view', project_id=project.id) }}" class="hover:text-indigo-600">{{ project.name }}</a>
+</div>
+
+<!-- Task Detail View -->
+<div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+  <!-- Task Header -->
+  <div class="flex justify-between items-start mb-4">
+    <div>
+      <h2 class="text-xl font-bold text-gray-800">{{ task.name }}</h2>
+      <div class="flex space-x-2 mt-1">
+        <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
+          {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
+        </span>
+        <span class="category-badge">{{ task.category or 'Frontend' }}</span>
+        <span class="text-xs text-gray-500 mt-1">Due: {{ task.dueDate }}</span>
+      </div>
+    </div>
+    {% if task.status == 0 %}
+    <button class="px-3 py-1 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 complTaskBtn" data-task-id="{{ task.id }}">
+      Complete Task
+    </button>
+    {% endif %}
+  </div>
+  
+  <!-- Description -->
+  <div class="mb-4">
+    <h3 class="text-md font-medium text-gray-800 mb-1">Description</h3>
+    <div class="bg-gray-50 p-3 rounded-lg text-sm">
+      <p class="text-gray-700">{{ task.description or 'Implement responsive CSS for the homepage so it displays correctly on mobile devices.' }}</p>
+    </div>
+  </div>
+  
+  <!-- Subtasks -->
+  <div class="mb-4">
+    <h3 class="text-md font-medium text-gray-800 mb-2">Subtasks</h3>
+    
+    {% if subtasks %}
+      <div class="space-y-2">
+        {% for subtask in subtasks %}
+        <div class="flex items-center justify-between py-1 border-b border-gray-100">
+          <div class="flex items-center">
+            <div class="subtask-icon {{ 'subtask-complete' if subtask.status == 1 else 'subtask-incomplete' }}">
+              {% if subtask.status == 1 %}✓{% else %}-{% endif %}
+            </div>
+            <span class="text-sm text-gray-800">{{ subtask.name }}</span>
+          </div>
+          
+          <div class="flex items-center">
+            {% if subtask.status == 0 %}
+            <button class="px-2 py-1 text-xs bg-gray-100 text-gray-600 rounded-lg mr-2 hover:bg-gray-200 completeSubtaskBtn" data-subtask-id="{{ subtask.id }}">
+              Mark Done
+            </button>
+            {% endif %}
+            <a href="#" class="text-xs text-indigo-600 hover:text-indigo-800 view-files-btn" data-subtask-id="{{ subtask.id }}">
+              View Files
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      
+      <!-- Add Subtask Form -->
+      <form class="add-subtask-form flex items-center mt-3" data-task-id="{{ task.id }}">
+        <input type="text" name="subtaskName" placeholder="Add a subtask..." class="flex-grow p-1.5 text-sm border border-slate-300 rounded-l-md">
+        <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white rounded-r-md text-sm">
+          Add
+        </button>
+      </form>
+    {% else %}
+      <p class="text-gray-500 text-sm mb-2">No subtasks yet</p>
+      
+      <!-- Add Subtask Form -->
+      <form class="add-subtask-form flex items-center" data-task-id="{{ task.id }}">
+        <input type="text" name="subtaskName" placeholder="Add a subtask..." class="flex-grow p-1.5 text-sm border border-slate-300 rounded-l-md">
+        <button type="submit" class="px-3 py-1.5 bg-indigo-600 text-white rounded-r-md text-sm">
+          Add
+        </button>
+      </form>
+    {% endif %}
+  </div>
+  
+  <!-- Upload Evidence -->
+  <div>
+    <h3 class="text-md font-medium text-gray-800 mb-2">Evidence Files</h3>
+    <div class="drop-zone h-20" id="drop-zone">
+      <p class="text-gray-600 text-sm">Drag files here or click to upload</p>
+      <p class="text-xs text-gray-500">PNG, JPG, PDF, TXT, ZIP (Max: 10MB)</p>
+    </div>
+    
+    <div class="flex space-x-2 mt-2">
+      <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm">
+        Upload
+      </button>
+      {% if task.status == 0 %}
+      <button class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded-lg text-sm">
+        Upload & Complete
+      </button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Evidence Files Modal (hidden by default) -->
+<div class="evidence-modal hidden" id="evidence-modal">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-md w-full">
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center mb-3">
+      <div>
+        <h3 class="text-lg font-bold text-gray-800">Evidence Files</h3>
+        <p class="text-xs text-gray-500" id="evidence-modal-title">Task: {{ task.name }}</p>
+      </div>
+      <button class="text-gray-400 hover:text-gray-600 text-xl font-bold" id="close-evidence-modal">×</button>
+    </div>
+    
+    <hr class="my-2">
+    
+    <!-- File List -->
+    <div class="py-2">
+      <div class="flex items-center p-2 border border-gray-200 rounded-lg mb-2">
+        <div class="file-icon text-red-500">PDF</div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-800">mobile-nav-code.pdf</p>
+          <p class="text-xs text-gray-500">245KB • Apr 2, 2025</p>
+        </div>
+        <button class="text-gray-400 hover:text-gray-600 ml-2">↓</button>
+      </div>
+      
+      <div class="flex items-center p-2 border border-gray-200 rounded-lg">
+        <div class="file-icon text-blue-500">IMG</div>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-gray-800">nav-screenshot.jpg</p>
+          <p class="text-xs text-gray-500">1.2MB • Apr 2, 2025</p>
+        </div>
+        <div>
+          <button class="text-gray-400 hover:text-gray-600 mx-1">👁</button>
+          <button class="text-gray-400 hover:text-gray-600">↓</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Drop Zone -->
+    <div class="drop-zone h-16 flex items-center justify-center mt-3">
+      <p class="text-gray-600 text-sm">Drop new files here</p>
+    </div>
+    
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm mt-2 w-full">
+      Browse Files
+    </button>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/task_detail.js') }}"></script>
+{% endblock %}
