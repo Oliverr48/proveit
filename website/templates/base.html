@@ -49,7 +49,7 @@
         <a href="/projects" class="nav-item flex items-center px-4 py-3 text-slate-700 {% if request.path == '/projects' %}active{% endif %}">
           <i class="fas fa-folder mr-3 {% if request.path == '/projects' %}text-indigo-600{% else %}text-slate-500{% endif %}"></i>
           <span>Projects</span>
-          <span class="ml-auto bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">3</span>
+          <span class="ml-auto bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">{{projects|length}}</span>
         </a>
         <a href="/inbox" class="nav-item flex items-center px-4 py-3 text-slate-700 {% if request.path == '/team' %}active{% endif %}">
           <i class="fas fa-users mr-3 {% if request.path == '/team' %}text-indigo-600{% else %}text-slate-500{% endif %}"></i>

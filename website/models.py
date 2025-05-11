@@ -18,14 +18,14 @@ class Project(db.Model):
             return 0
         else:
             print (self.tasksCompleted / (self.tasksActive + self.tasksCompleted) * 100)
-            return (self.tasksCompleted / (self.tasksActive + self.tasksCompleted)*100)  
+            return round((self.tasksCompleted / (self.tasksActive + self.tasksCompleted)*100),2)
 
     def __str__(self):
         return f"Project: {self.name}, Description: {self.description}, Start Date: {self.dueDate}"
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    parentProject = db.Column(db.String(100), db.ForeignKey('project.id'), nullable=False)
+    parentProject = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text, nullable=True)
     # The below will maybe have to be a drop down; a list of users??
@@ -36,6 +36,7 @@ class Task(db.Model):
     category = db.Column(db.String(100), nullable=True)
 
     subtasks = db.relationship('Subtask', backref='task', lazy=True)  # Ensure 'Subtask' matches the class name
+    project = db.relationship('Project', backref='tasks')
 
 class Subtask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -57,3 +58,16 @@ class User(db.Model, UserMixin):
 
     def __str__(self):
         return f"User: {self.username}, Email: {self.email}"
+
+class Activity(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    userId = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    projectId = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    # taskId is nullable; e.g collaborators invited etc may not be task specific 
+    taskId = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=True)
+    action = db.Column(db.String(200), nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    user = db.relationship('User', backref='activities')
+    project = db.relationship('Project', backref='activities')
+    #task = db.relationship('Task', backref='activities')

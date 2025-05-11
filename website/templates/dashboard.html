@@ -10,7 +10,7 @@
 <!-- Header -->
 <div class="mb-8">
   <h2 class="text-2xl font-bold text-slate-800">Dashboard</h2>
-  <p class="text-slate-500 text-sm mt-1">Welcome back, John! Here's what's happening today.</p>
+  <p class="text-slate-500 text-sm mt-1">Welcome back, {{current_user.firstName}}! Here's what's coming up for you.</p>
 </div>
 
 <!-- Top Stats -->
@@ -73,33 +73,18 @@
       </div>
     </div>
     <div class="space-y-4">
+      {% for project in projects %}
       <div>
         <div class="flex justify-between mb-1">
-          <span class="text-sm font-medium text-slate-700">Website Redesign</span>
-          <span class="text-sm text-slate-500">70%</span>
+          <span class="text-sm font-medium text-slate-700">{{ project.name }}</span>
+          <span class="text-sm text-slate-500">{{ project.progress }}%</span>
         </div>
         <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div class="h-full bg-indigo-500" style="width: 70%"></div>
+          <div class="h-full bg-indigo-500" style="width: {{ project.progress }}%"></div>
         </div>
       </div>
-      <div>
-        <div class="flex justify-between mb-1">
-          <span class="text-sm font-medium text-slate-700">Marketing Campaign</span>
-          <span class="text-sm text-slate-500">100%</span>
-        </div>
-        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div class="h-full bg-green-500" style="width: 100%"></div>
-        </div>
-      </div>
-      <div>
-        <div class="flex justify-between mb-1">
-          <span class="text-sm font-medium text-slate-700">App Development</span>
-          <span class="text-sm text-slate-500">30%</span>
-        </div>
-        <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-          <div class="h-full bg-amber-500" style="width: 30%"></div>
-        </div>
-      </div>
+      {% endfor %}
+     
     </div>
   </div>
   
@@ -107,30 +92,14 @@
   <div class="dashboard-card bg-white p-6 rounded-xl shadow-sm">
     <h3 class="font-bold text-slate-800 mb-6">Recent Activity</h3>
     <div class="space-y-4">
+      {% for activity in activities %}
       <div class="relative pl-6">
         <span class="activity-dot bg-green-500"></span>
-        <p class="text-sm font-medium text-slate-700">Task completed</p>
-        <p class="text-xs text-slate-500">  Mobile navigation design</p>
-        <p class="text-xs text-slate-400 mt-1">Today, 10:30 AM</p>
+        <p class="text-sm font-medium text-slate-700">{{activity.action}}</p>
+        <p class="text-xs text-slate-500"> {{activity.project.name}}, {{activity.user.firstName}} </p>
+        <p class="text-xs text-slate-400 mt-1">{{activity.timestamp}}</p>
       </div>
-      <div class="relative pl-6">
-        <span class="activity-dot bg-indigo-500"></span>
-        <p class="text-sm font-medium text-slate-700">File uploaded</p>
-        <p class="text-xs text-slate-500">  Homepage mockup.jpg</p>
-        <p class="text-xs text-slate-400 mt-1">Today, 9:15 AM</p>
-      </div>
-      <div class="relative pl-6">
-        <span class="activity-dot bg-amber-500"></span>
-        <p class="text-sm font-medium text-slate-700"> Task assigned</p>
-        <p class="text-xs text-slate-500">API integration</p>
-        <p class="text-xs text-slate-400 mt-1">Yesterday, 2:45 PM</p>
-      </div>
-      <div class="relative pl-6">
-        <span class="activity-dot bg-red-500"></span>
-        <p class="text-sm font-medium text-slate-700">Project delayed</p>
-        <p class="text-xs text-slate-500"> App Development</p>
-        <p class="text-xs text-slate-400 mt-1">Yesterday, 10:20 AM</p>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </div>
@@ -153,46 +122,28 @@
         </tr>
       </thead>
       <tbody class="divide-y divide-gray-100">
+        {% for task in upcomingTasks %}
         <tr>
           <td class="py-3">
-            <p class="text-sm font-medium text-slate-800">Implement responsive design</p>
+            <p class="text-sm font-medium text-slate-800">{{task.name}}</p>
           </td>
           <td class="py-3">
-            <p class="text-sm text-slate-600">Website Redesign</p>
+            <p class="text-sm text-slate-600">{{task.project.name}}</p>
           </td>
           <td class="py-3">
             <div class="flex items-center">
-              <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-medium">JD</div>
-              <span class="ml-2 text-sm text-slate-600">John Doe</span>
+              <div class="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-xs font-medium">CU</div>
+              <span class="ml-2 text-sm text-slate-600">{{task.collabs}}</span>
             </div>
           </td>
           <td class="py-3">
-            <p class="text-sm text-slate-600">Apr 15, 2025</p>
+            <p class="text-sm text-slate-600">{{task.dueDate}}</p>
           </td>
           <td class="py-3">
             <span class="px-2 py-1 text-xs bg-indigo-50 text-indigo-700 rounded-full">In Progress</span>
           </td>
         </tr>
-        <tr>
-          <td class="py-3">
-            <p class="text-sm font-medium text-slate-800">User authentication flow</p>
-          </td>
-          <td class="py-3">
-            <p class="text-sm text-slate-600">App Development</p>
-          </td>
-          <td class="py-3">
-            <div class="flex items-center">
-              <div class="w-6 h-6 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs font-medium">AS</div>
-              <span class="ml-2 text-sm text-slate-600">Alice Smith</span>
-            </div>
-          </td>
-          <td class="py-3">
-            <p class="text-sm text-slate-600">Jun 30, 2025</p>
-          </td>
-          <td class="py-3">
-            <span class="px-2 py-1 text-xs bg-amber-50 text-amber-700 rounded-full">Pending</span>
-          </td>
-        </tr>
+        {% endfor %}
       </tbody>
     </table>
   </div>
