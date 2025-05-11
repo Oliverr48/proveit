@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from .models import Project, Task
+from .models import Project, Task, User, Activity, Subtask
 from flask_login import login_required, current_user
 from . import db # Import the db object
 from website.models import Project, Task, Subtask  # Add Subtask here
+from datetime import datetime
 
 routes = Blueprint('routes', __name__)
 
@@ -16,7 +17,9 @@ def dashboard():
     projects = Project.query.all()
     comTasks = Task.query.filter_by(status=1).all()
     totalTasks = Task.query.all()
-    return render_template('dashboard.html', user=current_user, projects=projects, comTasks=comTasks, totalTasks=totalTasks)
+    recentActivity = Activity.query.order_by(Activity.timestamp.desc()).limit(5).all()
+    upcomingTasks = Task.query.filter(Task.status==0, Task.dueDate >= datetime.now()).order_by(Task.dueDate).limit(4).all()
+    return render_template('dashboard.html', user=current_user, projects=projects, comTasks=comTasks, totalTasks=totalTasks, activities=recentActivity, upcomingTasks=upcomingTasks)
 
 @routes.route('/projects')
 @login_required
@@ -72,9 +75,20 @@ def submitAddTask():
         parentProject=parentProject,
         status=0  
     )
+
+    db.session.add(new_task)
+    db.session.flush()
+
+    new_activity = Activity(
+        userId=current_user.id,
+        projectId=parentProject,
+        taskId=new_task.id,
+        action=f"New task added"
+    )
+
     print("New task created: ", new_task.name, new_task.collabs, new_task.dueDate, new_task.parentProject)
     # Add the new task to the database session and commit
-    db.session.add(new_task)
+    db.session.add(new_activity)
     db.session.commit()
 
     return jsonify({'message': 'Task created successfully'})
@@ -83,7 +97,9 @@ def submitAddTask():
 def project_view(project_id):
     project = Project.query.get_or_404(project_id)
     tasks = Task.query.filter_by(parentProject=project_id).all()
-    return render_template('project_view.html', project=project, tasks=tasks, user=current_user)
+    # Still need this for the base.html count on the side
+    projects = Project.query.all()
+    return render_template('project_view.html', project=project, tasks=tasks, user=current_user, projects=projects)
 
 @routes.route('/completeTask', methods=['POST'])
 def completeTask():
@@ -91,10 +107,18 @@ def completeTask():
     task = Task.query.get_or_404(task_id)
     project = Project.query.get_or_404(task.parentProject)
 
+
+    completed_activity = Activity(
+        userId=current_user.id,
+        projectId=project.id,
+        taskId=task.id,
+        action=f"Task completed!"
+    )
     # Update the task status to completed
     task.status = 1
     project.tasksActive -= 1
     project.tasksCompleted += 1
+    db.session.add(completed_activity)
     db.session.commit()
     return jsonify({'message': 'Task completed successfully'})
 
@@ -110,6 +134,9 @@ def task_detail(task_id):
     # Get the parent project
     project = Project.query.get_or_404(task.parentProject)
     
+    #Still need this for the base.html count on the side
+    projects = Project.query.all()
+    
     # Get subtasks for this task
     subtasks = Subtask.query.filter_by(taskId=task_id).all()
     
@@ -120,6 +147,7 @@ def task_detail(task_id):
         'task_detail.html',
         task=task,
         project=project,
+        projects=projects,
         subtasks=subtasks,
         evidence_files=evidence_files,
         user=current_user
