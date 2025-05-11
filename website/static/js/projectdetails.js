@@ -35,7 +35,7 @@ var modal = document.getElementById('modalAddTask');
 });
 
 function initializeAddTaskButton() {
-  const addTaskBtn = document.getElementById('addTaskBtn');
+  const addTaskBtn = document.getElementById('newTaskBtn');
   var modal = document.getElementById('modalAddTask');
   
   if (addTaskBtn) {

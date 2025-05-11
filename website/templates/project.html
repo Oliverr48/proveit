@@ -60,7 +60,7 @@
       </div>
       <div>
         <p class="text-sm text-slate-500">Tasks Completed</p>
-        <h3 class="text-2xl font-bold text-slate-800">{%for task in comTasks%}{%if loop.first%}{{loop.length}}{%endif%}{%endfor%}</h3>
+        <h3 class="text-2xl font-bold text-slate-800">{{comTasks|length}}</h3>
       </div>
     </div>
   </div>
