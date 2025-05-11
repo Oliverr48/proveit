@@ -134,6 +134,59 @@
 {% endblock %}
 
 {% block content %}
+<!-- Project Status Bar -->
+<div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+  <!-- Project Header -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-800">{{ project.name }}</h1>
+      <p class="text-sm text-gray-500">{{ project.assignee or 'Unassigned' }} | Due {{ project.dueDate }}</p>
+    </div>
+  </div>
+  
+  <!-- Progress Bar -->
+  <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+    {% set completion_percentage = (project.tasksCompleted / (project.tasksActive + project.tasksCompleted) * 100) if (project.tasksActive + project.tasksCompleted) > 0 else 100 %}
+    <div class="bg-indigo-600 h-2.5 rounded-full" style="width: {{ completion_percentage }}%"></div>
+  </div>
+  
+  <!-- Project Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <!-- Tasks Remaining -->
+    <div class="flex items-center">
+      <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center mr-3">
+        <span class="text-amber-600">●</span>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Tasks Remaining</p>
+        <p class="text-xl font-bold text-gray-800">{{ project.tasksActive }}</p>
+      </div>
+    </div>
+    
+    <!-- Tasks Completed -->
+    <div class="flex items-center">
+      <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+        <span class="text-green-600">✓</span>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Tasks Completed</p>
+        <p class="text-xl font-bold text-gray-800">{{ project.tasksCompleted }}</p>
+      </div>
+    </div>
+    
+    <!-- Project Collaborators -->
+    <div class="flex items-center">
+      <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+        <span class="text-green-600">👥</span>
+      </div>
+      <div>
+        <p class="text-sm text-gray-500">Project Collaborators</p>
+        <p class="text-xl font-bold text-gray-800">{{ project.collaborators|default('N/A') }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Task Management Header -->
 <div class="flex justify-between items-center mb-8">
   <h1 class="text-2xl font-bold text-gray-800">Task Management</h1>
@@ -141,7 +194,9 @@
     <span class="mr-2">●</span> New Task
   </button>
 </div>
-<div id = "modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+
+<!-- Add Task Modal -->
+<div id="modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
   <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
     <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
     <form id="addTaskForm">
@@ -158,14 +213,42 @@
         <textarea id="taskCollabs" name="taskCollabs" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
       </div>
       <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
-      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
+      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task</button>
     </form>
     <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
   </div>
 </div>
 
-<!-- Task Cards Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+<!-- Task Management Header -->
+<div class="flex justify-between items-center mb-8">
+  <h1 class="text-2xl font-bold text-gray-800">Task Management</h1>
+  <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="newTaskBtn">
+    <span class="mr-2">●</span> New Task
+  </button>
+</div>
+
+<!-- Add Task Modal -->
+<div id="modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
+    <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
+    <form id="addTaskForm">
+      <div class="mb-4">
+        <label for="taskName" class="block text-sm font-medium text-slate-700">Task Name</label>
+        <input type="text" id="taskName" name="taskName" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+      </div>
+      <div class="mb-4">
+        <label for="taskDueDate" class="block text-sm font-medium text-slate-700">Due Date</label>
+        <input type="date" id="taskDueDate" name="taskDueDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+      </div>
+      <div class="mb-4">
+        <label for="taskCollabs" class="block text-sm font-medium text-slate-700">Collaborators</label>
+        <textarea id="taskCollabs" name="taskCollabs" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+      </div>
+      <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
+      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task</button>
+>
+      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
+ md:grid-cols-2 gap-6 mb-8">
   {% for task in tasks %}
   <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow transition-all duration-200" data-task-id="{{ task.id }}">
     <!-- Task Header -->
