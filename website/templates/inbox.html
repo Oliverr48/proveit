@@ -9,22 +9,25 @@
     <div class="container">
         <h1>Project Invites</h1>
         <div class="invites-list">
-            <!-- Example Invite -->
-            {% for invite in invites %}
-            <div class="invite-item">
-                <p><strong>Project:</strong> {{ invite.project_name }}</p>
-                <p><strong>Invited By:</strong> {{ invite.inviter_name }}</p>
-                <div class="actions">
-                    <form method="POST" action="{{ url_for('accept_invite', invite_id=invite.id) }}" style="display: inline;">
-                        <button type="submit" class="btn-accept">Accept</button>
-                    </form>
-                    <form method="POST" action="{{ url_for('reject_invite', invite_id=invite.id) }}" style="display: inline;">
-                        <button type="submit" class="btn-reject">Reject</button>
-                    </form>
+            {% if invites %}
+                {% for invite in invites %}
+                <div class="invite-item">
+                    <p><strong>Project:</strong> {{ invite.project_name }}</p>
+                    <p><strong>Invited By:</strong> {{ invite.inviter_name }}</p>
+                    <div class="actions">
+                        <form method="POST" action="{{ url_for('routes.accept_invite', invite_id=invite.invite_id) }}" style="display: inline;">
+                            <button type="submit" class="btn-accept">Accept</button>
+                        </form>
+                        <form method="POST" action="{{ url_for('routes.reject_invite', invite_id=invite.invite_id) }}" style="display: inline;">
+                            <button type="submit" class="btn-reject">Reject</button>
+                        </form>
+                    </div>
                 </div>
-            </div>
-            <hr>
-            {% endfor %}
+                <hr>
+                {% endfor %}
+            {% else %}
+                <p>No invites found.</p>
+            {% endif %}
         </div>
     </div>
 </body>

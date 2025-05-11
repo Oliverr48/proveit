@@ -11,6 +11,43 @@ routes = Blueprint('routes', __name__)
 def index():
     return render_template('index.html')
 
+@routes.route('/invite_user', methods=['POST'])
+@login_required
+def invite_user():
+    # Get the form data
+    project_id = request.json.get('project_id')
+    user_search = request.json.get('userSearch')
+
+    # Ensure the project belongs to the current user
+    project = Project.query.filter_by(id=project_id, owner_id=current_user.id).first_or_404()
+
+    # Look up the user by username or email
+    user = User.query.filter((User.username == user_search) | (User.email == user_search)).first()
+
+    if not user:
+        return jsonify({'status': 'error', 'message': 'User not found'}), 404
+
+    # Prevent users from inviting themselves
+    if user.id == current_user.id:
+        return jsonify({'status': 'error', 'message': 'You cannot invite yourself'}), 400
+
+    # Check if the user is already invited
+    existing_invite = Activity.query.filter_by(userId=user.id, projectId=project.id, action="Invite sent").first()
+    if existing_invite:
+        return jsonify({'status': 'error', 'message': 'User already invited'}), 400
+
+    # Create an invite activity
+    invite_activity = Activity(
+        userId=user.id,
+        projectId=project.id,
+        action="Invite sent"
+    )
+
+    db.session.add(invite_activity)
+    db.session.commit()
+
+    return jsonify({'status': 'success', 'message': 'User successfully invited'})
+
 @routes.route('/inbox')
 @login_required
 def inbox():
@@ -21,7 +58,7 @@ def inbox():
         Activity.id.label('invite_id')
     ).join(User, User.id == Activity.userId) \
      .join(Project, Project.id == Activity.projectId) \
-     .filter(Activity.action == 'Invite sent', Activity.userId != current_user.id) \
+     .filter(Activity.action == 'Invite sent', Activity.userId == current_user.id) \
      .all()
 
     # Render the inbox template with the invites
@@ -30,54 +67,40 @@ def inbox():
 @routes.route('/dashboard')
 @login_required
 def dashboard():
-    # Get only the projects owned by the current user
-    projects = Project.query.filter_by(owner_id=current_user.id).all()
+    # Get projects owned by the current user or where they are a collaborator
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
     
-    # Get completed tasks for the current user's projects
+    # Get completed tasks for the user's projects
     comTasks = Task.query.filter(Task.parentProject.in_(
         [project.id for project in projects]
     ), Task.status == 1).all()
     
-    # Get all tasks for the current user's projects
+    # Get all tasks for the user's projects
     totalTasks = Task.query.filter(Task.parentProject.in_(
         [project.id for project in projects]
     )).all()
-    
-    # Get recent activity for the current user's projects
-    recentActivity = Activity.query.filter(Activity.projectId.in_(
-        [project.id for project in projects]
-    )).order_by(Activity.timestamp.desc()).limit(5).all()
-    
-    # Get upcoming tasks for the current user's projects
-    upcomingTasks = Task.query.filter(
-        Task.parentProject.in_([project.id for project in projects]),
-        Task.status == 0,
-        Task.dueDate >= datetime.now()
-    ).order_by(Task.dueDate).limit(4).all()
     
     return render_template(
         'dashboard.html',
         user=current_user,
         projects=projects,
         comTasks=comTasks,
-        totalTasks=totalTasks,
-        activities=recentActivity,
-        upcomingTasks=upcomingTasks
+        totalTasks=totalTasks
     )
-
 
 @routes.route('/projects')
 @login_required
 def projects():
-    # Get only the projects owned by the current user
-    projects = Project.query.filter_by(owner_id=current_user.id).all()
+    # Get projects owned by the current user or where they are a collaborator
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
     
-    # Get completed tasks for the current user's projects
-    comTasks = Task.query.filter(Task.parentProject.in_(
-        [project.id for project in projects]
-    ), Task.status == 1).all()
-    
-    return render_template('project.html', projects=projects, comTasks=comTasks, user=current_user)
+    return render_template('project.html', projects=projects, user=current_user)
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
     print("Are we here???")
@@ -144,16 +167,15 @@ def submitAddTask():
 @routes.route('/project_view/<int:project_id>')
 @login_required
 def project_view(project_id):
-    # Ensure the project belongs to the current user
-    project = Project.query.filter_by(id=project_id, owner_id=current_user.id).first_or_404()
-    
-    # Get tasks for the project
-    tasks = Task.query.filter_by(parentProject=project_id).all()
-    
-    # Get only the current user's projects for the sidebar
-    projects = Project.query.filter_by(owner_id=current_user.id).all()
-    
-    return render_template('project_view.html', project=project, tasks=tasks, user=current_user, projects=projects)
+    # Ensure the user is either the owner or a collaborator
+    project = Project.query.filter(
+        (Project.id == project_id) & 
+        ((Project.owner_id == current_user.id) | 
+         (Project.collaborators.any(id=current_user.id)))
+    ).first_or_404()
+
+    tasks = Task.query.filter_by(parentProject=project.id).all()
+    return render_template('project_view.html', project=project, tasks=tasks)
 
 @routes.route('/completeTask', methods=['POST'])
 def completeTask():
@@ -241,3 +263,41 @@ def update_subtask_status():
     db.session.commit()
     
     return jsonify({'status': 'success'})
+
+@routes.route('/accept_invite/<int:invite_id>', methods=['POST'])
+@login_required
+def accept_invite(invite_id):
+    # Fetch the invite activity
+    invite = Activity.query.get_or_404(invite_id)
+
+    # Ensure the invite is for the current user
+    if invite.userId != current_user.id:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
+
+    # Add the user as a collaborator to the project
+    project = Project.query.get_or_404(invite.projectId)
+    if current_user not in project.collaborators:
+        project.collaborators.append(current_user)
+
+    # Update the activity to indicate the invite was accepted
+    invite.action = "Invite accepted"
+    db.session.commit()
+
+    return redirect(url_for('routes.inbox'))
+
+
+@routes.route('/reject_invite/<int:invite_id>', methods=['POST'])
+@login_required
+def reject_invite(invite_id):
+    # Fetch the invite activity
+    invite = Activity.query.get_or_404(invite_id)
+
+    # Ensure the invite is for the current user
+    if invite.userId != current_user.id:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
+
+    # Update the activity to indicate the invite was rejected
+    invite.action = "Invite rejected"
+    db.session.commit()
+
+    return redirect(url_for('routes.inbox'))

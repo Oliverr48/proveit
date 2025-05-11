@@ -2,6 +2,12 @@
 from . import db
 from flask_login import UserMixin
 
+# Many-to-Many relationship table for project collaborators
+project_collaborators = db.Table('project_collaborators',
+    db.Column('project_id', db.Integer, db.ForeignKey('project.id'), primary_key=True),
+    db.Column('user_id', db.Integer, db.ForeignKey('user.id'), primary_key=True)
+)
+
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
@@ -13,6 +19,7 @@ class Project(db.Model):
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Link project to a user
 
     owner = db.relationship('User', backref='projects')  # Relationship to access the owner of the project
+    collaborators = db.relationship('User', secondary=project_collaborators, backref='collaborated_projects')
 
     @property
     def progress(self): 
