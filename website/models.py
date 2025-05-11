@@ -2,7 +2,6 @@
 from . import db
 from flask_login import UserMixin
 
-# removed def __init__ from here in the below classes as it isn't in SQLAlchemy models (?)
 class Project(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
@@ -11,6 +10,9 @@ class Project(db.Model):
     # number of total tasks in the project - this is a bit of a placeholder for now, but could be useful later on
     tasksActive = db.Column(db.Integer, nullable=False)
     tasksCompleted = db.Column(db.Integer, nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Link project to a user
+
+    owner = db.relationship('User', backref='projects')  # Relationship to access the owner of the project
 
     @property
     def progress(self): 
@@ -31,7 +33,7 @@ class Task(db.Model):
     # The below will maybe have to be a drop down; a list of users??
     collabs = db.Column(db.String(200), nullable=False)
     dueDate = db.Column(db.String(20), nullable=False)
-    #0 represents in progress, 1 represents completed
+    # 0 represents in progress, 1 represents completed
     status = db.Column(db.Integer, nullable=False)
     category = db.Column(db.String(100), nullable=True)
 
@@ -46,7 +48,6 @@ class Subtask(db.Model):
     
     def __repr__(self):
         return f'<Subtask {self.name}>'
-
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -70,4 +71,4 @@ class Activity(db.Model):
 
     user = db.relationship('User', backref='activities')
     project = db.relationship('Project', backref='activities')
-    #task = db.relationship('Task', backref='activities')
+    # task = db.relationship('Task', backref='activities')

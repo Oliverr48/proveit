@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox - Project Invites</title>
+</head>
+<body>
+    <div class="container">
+        <h1>Project Invites</h1>
+        <div class="invites-list">
+            <!-- Example Invite -->
+            {% for invite in invites %}
+            <div class="invite-item">
+                <p><strong>Project:</strong> {{ invite.project_name }}</p>
+                <p><strong>Invited By:</strong> {{ invite.inviter_name }}</p>
+                <div class="actions">
+                    <form method="POST" action="{{ url_for('accept_invite', invite_id=invite.id) }}" style="display: inline;">
+                        <button type="submit" class="btn-accept">Accept</button>
+                    </form>
+                    <form method="POST" action="{{ url_for('reject_invite', invite_id=invite.id) }}" style="display: inline;">
+                        <button type="submit" class="btn-reject">Reject</button>
+                    </form>
+                </div>
+            </div>
+            <hr>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

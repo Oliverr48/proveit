@@ -11,26 +11,73 @@ routes = Blueprint('routes', __name__)
 def index():
     return render_template('index.html')
 
+@routes.route('/inbox')
+@login_required
+def inbox():
+    # Fetch invites for the current user
+    invites = db.session.query(
+        Project.name.label('project_name'),
+        User.username.label('inviter_name'),
+        Activity.id.label('invite_id')
+    ).join(User, User.id == Activity.userId) \
+     .join(Project, Project.id == Activity.projectId) \
+     .filter(Activity.action == 'Invite sent', Activity.userId != current_user.id) \
+     .all()
+
+    # Render the inbox template with the invites
+    return render_template('inbox.html', invites=invites)
+
 @routes.route('/dashboard')
 @login_required
 def dashboard():
-    projects = Project.query.all()
-    comTasks = Task.query.filter_by(status=1).all()
-    totalTasks = Task.query.all()
-    recentActivity = Activity.query.order_by(Activity.timestamp.desc()).limit(5).all()
-    upcomingTasks = Task.query.filter(Task.status==0, Task.dueDate >= datetime.now()).order_by(Task.dueDate).limit(4).all()
-    return render_template('dashboard.html', user=current_user, projects=projects, comTasks=comTasks, totalTasks=totalTasks, activities=recentActivity, upcomingTasks=upcomingTasks)
+    # Get only the projects owned by the current user
+    projects = Project.query.filter_by(owner_id=current_user.id).all()
+    
+    # Get completed tasks for the current user's projects
+    comTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    ), Task.status == 1).all()
+    
+    # Get all tasks for the current user's projects
+    totalTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    )).all()
+    
+    # Get recent activity for the current user's projects
+    recentActivity = Activity.query.filter(Activity.projectId.in_(
+        [project.id for project in projects]
+    )).order_by(Activity.timestamp.desc()).limit(5).all()
+    
+    # Get upcoming tasks for the current user's projects
+    upcomingTasks = Task.query.filter(
+        Task.parentProject.in_([project.id for project in projects]),
+        Task.status == 0,
+        Task.dueDate >= datetime.now()
+    ).order_by(Task.dueDate).limit(4).all()
+    
+    return render_template(
+        'dashboard.html',
+        user=current_user,
+        projects=projects,
+        comTasks=comTasks,
+        totalTasks=totalTasks,
+        activities=recentActivity,
+        upcomingTasks=upcomingTasks
+    )
+
 
 @routes.route('/projects')
 @login_required
 def projects():
-    #Get the projs from the DB 
-    projects = Project.query.all()
-    # May need to update this in future to get tasks only for active projects? 
-    comTasks = Task.query.filter_by(status=1).all()
-    print("Got the projects!")
+    # Get only the projects owned by the current user
+    projects = Project.query.filter_by(owner_id=current_user.id).all()
+    
+    # Get completed tasks for the current user's projects
+    comTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    ), Task.status == 1).all()
+    
     return render_template('project.html', projects=projects, comTasks=comTasks, user=current_user)
-
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
     print("Are we here???")
@@ -46,7 +93,8 @@ def submitNewProject():
         description=description,
         dueDate=dueDate,
         tasksActive=tasksActive,
-        tasksCompleted=tasksCompleted
+        tasksCompleted=tasksCompleted,
+        owner_id=current_user.id  # Set the owner to the current user
     )
 
     # Add the new project to the database session and commit
@@ -94,11 +142,17 @@ def submitAddTask():
     return jsonify({'message': 'Task created successfully'})
 
 @routes.route('/project_view/<int:project_id>')
+@login_required
 def project_view(project_id):
-    project = Project.query.get_or_404(project_id)
+    # Ensure the project belongs to the current user
+    project = Project.query.filter_by(id=project_id, owner_id=current_user.id).first_or_404()
+    
+    # Get tasks for the project
     tasks = Task.query.filter_by(parentProject=project_id).all()
-    # Still need this for the base.html count on the side
-    projects = Project.query.all()
+    
+    # Get only the current user's projects for the sidebar
+    projects = Project.query.filter_by(owner_id=current_user.id).all()
+    
     return render_template('project_view.html', project=project, tasks=tasks, user=current_user, projects=projects)
 
 @routes.route('/completeTask', methods=['POST'])
