@@ -43,6 +43,8 @@ def login():
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
     if request.method == 'POST':
+        first_name = request.form.get('firstName')
+        last_name = request.form.get('lastName')
         email = request.form.get('email')
         username = request.form.get('userName')
         password1 = request.form.get('password1')
@@ -75,9 +77,10 @@ def signup():
             return render_template('signup.html')
             
         # If no errors, create the user and redirect
-        new_user = User(email=email, 
-                      username=username, 
-                      password=generate_password_hash(password1, method='pbkdf2:sha256', salt_length=16))
+
+        new_user = User(firstName=first_name, lastName=last_name,
+            email=email, username=username, 
+            password=generate_password_hash(password1, method='pbkdf2:sha256', salt_length=16))
         
         try:
             db.session.add(new_user)
