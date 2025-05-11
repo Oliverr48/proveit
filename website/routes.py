@@ -24,7 +24,7 @@ def projects():
     #Get the projs from the DB 
     projects = Project.query.all()
     # May need to update this in future to get tasks only for active projects? 
-    comTasks = Task.query.filter_by(status=1)
+    comTasks = Task.query.filter_by(status=1).all()
     print("Got the projects!")
     return render_template('project.html', projects=projects, comTasks=comTasks, user=current_user)
 
