@@ -195,7 +195,7 @@
   </button>
 </div>
 
-<!-- Add Task Modal -->
+<!-- Add Task Modal (Only include once) -->
 <div id="modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
   <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
     <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
@@ -219,29 +219,8 @@
   </div>
 </div>
 
-
-<!-- Add Task Modal -->
-<div id="modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
-    <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
-    <form id="addTaskForm">
-      <div class="mb-4">
-        <label for="taskName" class="block text-sm font-medium text-slate-700">Task Name</label>
-        <input type="text" id="taskName" name="taskName" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
-      </div>
-      <div class="mb-4">
-        <label for="taskDueDate" class="block text-sm font-medium text-slate-700">Due Date</label>
-        <input type="date" id="taskDueDate" name="taskDueDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
-      </div>
-      <div class="mb-4">
-        <label for="taskCollabs" class="block text-sm font-medium text-slate-700">Collaborators</label>
-        <textarea id="taskCollabs" name="taskCollabs" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-      </div>
-      <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
-      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task</button>
->
-      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
- md:grid-cols-2 gap-6 mb-8">
+<!-- Tasks Grid (Fixed the structure) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
   {% for task in tasks %}
   <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow transition-all duration-200" data-task-id="{{ task.id }}">
     <!-- Task Header -->
@@ -444,21 +423,87 @@
 {% endblock %}
 
 {% block extra_js %}
-
 <script src="{{ url_for('static', filename='js/projectdetails.js') }}"></script> 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Task detail toggle
-  const viewDetailLinks = document.querySelectorAll('.view-task-btn');
-  viewDetailLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      const taskId = this.closest('[data-task-id]').dataset.taskId;
-      window.location.href = `/task/${taskId}`;
+  // Apply all event listeners after DOM has loaded
+  initializeAddTaskButton();
+  initializeTaskCompleteButton();
+  initializeEvidenceModal();
+  initializeFileUpload();
+});
+
+// Global variable for the task modal
+let taskModal;
+
+// Initialize the Add Task button and modal
+function initializeAddTaskButton() {
+  const addTaskBtn = document.getElementById('newTaskBtn');
+  taskModal = document.getElementById('modalAddTask');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  
+  if (addTaskBtn && taskModal) {
+    addTaskBtn.addEventListener('click', function() {
+      taskModal.classList.remove('hidden');
+      taskModal.style.display = 'flex';
+    });
+    
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', function() {
+        taskModal.classList.add('hidden');
+        taskModal.style.display = 'none';
+      });
+    }
+  }
+}
+
+// Handle form submission
+$(document).ready(function() {
+  $('#addTaskForm').on('submit', function(e) {
+    e.preventDefault();
+    console.log('Form submitted!');
+    
+    $.ajax({
+      url: '/submitAddTask',
+      type: 'POST',
+      data: $(this).serialize(),
+      success: function(response) {
+        if (taskModal) {
+          taskModal.classList.add('hidden');
+          taskModal.style.display = 'none';
+        }
+        location.reload(); // Refresh to show the new project
+      },
+      error: function(error) {
+        alert('Error adding task: ' + error.responseText);
+      }
     });
   });
+});
+
+// Initialize the Complete Task button
+function initializeTaskCompleteButton() {
+  const completeTaskBtn = document.getElementById('complTaskBtn');
   
-  // Evidence files modal
+  if (completeTaskBtn) {
+    completeTaskBtn.addEventListener('click', function() {
+      $.ajax({
+        url: '/completeTask',
+        type: 'POST',
+        data: {task_id: this.dataset.taskId},
+        success: function(response) {
+          location.reload(); // Refresh to show the updated task status
+        },
+        error: function(error) {
+          alert('Error completing task: ' + error.responseText);
+        }
+      });
+    });
+  }
+}
+
+// Initialize the Evidence Modal
+function initializeEvidenceModal() {
   const viewFilesButtons = document.querySelectorAll('.view-files-btn');
   const evidenceModal = document.getElementById('evidence-modal');
   const closeEvidenceModal = document.getElementById('close-evidence-modal');
@@ -470,20 +515,26 @@ document.addEventListener('DOMContentLoaded', function() {
       const subtaskName = this.closest('div').querySelector('span').textContent.trim();
       
       // Update modal title
-      document.getElementById('evidence-modal-title').textContent = `Task: ${document.title} > ${subtaskName}`;
+      if (document.getElementById('evidence-modal-title')) {
+        document.getElementById('evidence-modal-title').textContent = `Task: ${document.title} > ${subtaskName}`;
+      }
       
       // Show modal
-      evidenceModal.classList.remove('hidden');
+      if (evidenceModal) {
+        evidenceModal.classList.remove('hidden');
+      }
     });
   });
   
-  if (closeEvidenceModal) {
+  if (closeEvidenceModal && evidenceModal) {
     closeEvidenceModal.addEventListener('click', function() {
       evidenceModal.classList.add('hidden');
     });
   }
-  
-  // File upload functionality
+}
+
+// Initialize File Upload functionality
+function initializeFileUpload() {
   const dropZones = document.querySelectorAll('.drop-zone');
   
   dropZones.forEach(zone => {
@@ -516,11 +567,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function handleDrop(e) {
       const files = e.dataTransfer.files;
-      // Handle file upload 
+      // Handle file upload
       console.log('Files dropped:', files);
       
       if (files.length > 0) {
         alert(`${files.length} file(s) selected for upload`);
+       
       }
     }
     
@@ -534,11 +586,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (this.files.length > 0) {
           console.log('Files selected:', this.files);
           alert(`${this.files.length} file(s) selected for upload`);
+          
         }
       });
     });
   });
-  
-});
+}
 </script>
 {% endblock %}
