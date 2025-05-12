@@ -31,6 +31,10 @@ def invite_user():
     if user.id == current_user.id:
         return jsonify({'status': 'error', 'message': 'You cannot invite yourself'}), 400
 
+    # Check if the user is already a collaborator
+    if user in project.collaborators:
+        return jsonify({'status': 'error', 'message': 'User already in project'}), 400
+
     # Check if the user is already invited
     existing_invite = Activity.query.filter_by(userId=user.id, projectId=project.id, action="Invite sent").first()
     if existing_invite:
@@ -56,14 +60,14 @@ def inbox():
         Project.name.label('project_name'),
         User.username.label('inviter_name'),
         Activity.id.label('invite_id')
-    ).join(User, User.id == Activity.userId) \
-     .join(Project, Project.id == Activity.projectId) \
-     .filter(Activity.action == 'Invite sent', Activity.userId == current_user.id) \
-     .all()
+    ).join(Project, Project.id == Activity.projectId
+    ).join(User, User.id == Project.owner_id  # Join with the project owner
+    ).filter(
+        Activity.action == 'Invite sent',
+        Activity.userId == current_user.id
+    ).all()
 
-    # Render the inbox template with the invites
     return render_template('inbox.html', invites=invites)
-
 @routes.route('/dashboard')
 @login_required
 def dashboard():
@@ -101,6 +105,7 @@ def projects():
     ).all()
     
     return render_template('project.html', projects=projects, user=current_user)
+
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
     print("Are we here???")
@@ -301,3 +306,39 @@ def reject_invite(invite_id):
     db.session.commit()
 
     return redirect(url_for('routes.inbox'))
+
+@routes.route('/leave_project/<int:project_id>', methods=['POST'])
+@login_required
+def leave_project(project_id):
+    # Fetch the project
+    project = Project.query.get_or_404(project_id)
+
+    # Ensure the user is not the owner of the project
+    if project.owner_id == current_user.id:
+        return jsonify({'status': 'error', 'message': 'You cannot leave your own project'}), 403
+
+    # Remove the user from the collaborators
+    if current_user in project.collaborators:
+        project.collaborators.remove(current_user)
+        db.session.commit()
+        return redirect(url_for('routes.projects'))
+
+    return jsonify({'status': 'error', 'message': 'You are not a collaborator on this project'}), 400
+
+@routes.route('/delete_project/<int:project_id>', methods=['POST'])
+@login_required
+def delete_project(project_id):
+    # Fetch the project
+    project = Project.query.get_or_404(project_id)
+
+    # Ensure the user is the owner of the project
+    if project.owner_id != current_user.id:
+        return jsonify({'status': 'error', 'message': 'You are not authorized to delete this project'}), 403
+
+    # Delete the project and its associated tasks and activities
+    Task.query.filter_by(parentProject=project.id).delete()
+    Activity.query.filter_by(projectId=project.id).delete()
+    db.session.delete(project)
+    db.session.commit()
+
+    return redirect(url_for('routes.projects'))

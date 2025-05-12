@@ -140,43 +140,26 @@
   <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="newTaskBtn">
     <span class="mr-2">●</span> New Task
   </button>
-  <button id="openInviteModalBtn">Invite Users</button>
-</div>
-<div id = "modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
-    <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
-    <form id="addTaskForm">
-      <div class="mb-4">
-        <label for="taskName" class="block text-sm font-medium text-slate-700">Task Name</label>
-        <input type="text" id="taskName" name="taskName" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
-      </div>
-      <div class="mb-4">
-        <label for="taskDueDate" class="block text-sm font-medium text-slate-700">Due Date</label>
-        <input type="date" id="taskDueDate" name="taskDueDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
-      </div>
-      <div class="mb-4">
-        <label for="taskCollabs" class="block text-sm font-medium text-slate-700">Collaborators</label>
-        <textarea id="taskCollabs" name="taskCollabs" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-      </div>
-      <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
-      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
-    </form>
-    <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
-  </div>
+  {% if project.owner_id == current_user.id %}
+  <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="openInviteModalBtn">
+    <span class="mr-2">+</span> Invite Users
+  </button>
+  {% endif %}
 </div>
 
 <!-- Invite Users Modal -->
-<div id="inviteModal" class="hidden">
-  <div>
-    <h3>Invite Users</h3>
+<div id="inviteModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
+    <h3 class="text-lg font-bold text-slate-800 mb-4">Invite Users</h3>
     <form id="inviteUserForm">
+      <div class="mb-4">
+        <label for="userSearch" class="block text-sm font-medium text-slate-700">Search for Users</label>
+        <input type="text" id="userSearch" name="userSearch" placeholder="Enter username or email" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+      </div>
       <input type="hidden" id="project_id" name="project_id" value="{{ project.id }}">
-      <label for="userSearch">Search for Users:</label>
-      <input type="text" id="userSearch" name="userSearch" placeholder="Enter username or email" required>
-      <br>
-      <button type="submit">Send Invite</button>
+      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Send Invite</button>
     </form>
-    <button id="closeInviteModalBtn">Close</button>
+    <button id="closeInviteModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
   </div>
 </div>
 
