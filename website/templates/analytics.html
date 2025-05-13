@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block head %}
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/analytics.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="flex justify-between items-center mb-8">
+  <div>
+    <h2 class="text-2xl font-bold text-slate-800">Analytics</h2>
+    <p class="text-slate-500 text-sm mt-1">Track your projects' progress</p>
+  </div>
+</div>
+
+
+<div class="container">
+
+  <!-- Analytics Grid -->
+  <div class="analytics-grid">
+    <!-- Time-Based Analytics -->
+    <div class="analytics-card">
+      <h3>Time-Based Analytics</h3>
+      <canvas id="timeAnalyticsChart"></canvas>
+    </div>
+
+    <!-- Team Performance Analytics -->
+    <div class="analytics-card">
+      <h3>Team Performance Analytics</h3>
+      <canvas id="teamPerformanceChart"></canvas>
+    </div>
+
+    <!-- Project Performance Analytics -->
+    <div class="analytics-card analytics-full">
+      <h3>Project Performance Analytics</h3>
+      <canvas id="completionChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="{{ url_for('static', filename='js/analytics.js') }}"></script>
+{% endblock %}

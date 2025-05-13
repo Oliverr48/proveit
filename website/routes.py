@@ -344,3 +344,66 @@ def delete_project(project_id):
     db.session.commit()
 
     return redirect(url_for('routes.projects'))
+
+from flask import render_template, jsonify
+from flask_login import login_required, current_user
+from .models import db, Project, Task, Activity
+from sqlalchemy import extract, func
+
+@routes.route('/analytics')
+@login_required
+def analytics():
+    return render_template('analytics.html')
+
+@routes.route('/api/time-based-analytics')
+@login_required
+def time_based_analytics():
+    activity_by_hour = db.session.query(
+        extract('hour', Activity.timestamp).label('hour'),
+        func.count().label('count')
+    ).filter(Activity.userId == current_user.id).group_by('hour').order_by('hour').all()
+
+    hours = [f"{i:02}:00" for i in range(24)]
+    counts = [0] * 24
+    for row in activity_by_hour:
+        counts[int(row.hour)] = row.count
+
+    return jsonify({'labels': hours, 'data': counts})
+
+@routes.route('/api/team-performance-analytics')
+@login_required
+def team_performance_analytics():
+    tasks = Task.query.all()
+    user_task_count = {}
+
+    for task in tasks:
+        for username in task.collabs.split(','):
+            name = username.strip()
+            if name:
+                user_task_count[name] = user_task_count.get(name, 0) + 1
+
+    return jsonify({
+        'labels': list(user_task_count.keys()),
+        'data': list(user_task_count.values())
+    })
+
+@routes.route('/api/project-performance-analytics')
+@login_required
+def project_performance_analytics():
+    projects = Project.query.filter_by(owner_id=current_user.id).all()
+
+    data = {
+        'labels': ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+        'datasets': []
+    }
+
+    for project in projects:
+        trend = [round(project.progress * (i + 1) / 7, 2) for i in range(7)]
+        data['datasets'].append({
+            'label': project.name,
+            'data': trend,
+            'borderColor': 'blue',
+            'fill': False
+        })
+
+    return jsonify(data)
