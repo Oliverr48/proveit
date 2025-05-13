@@ -12,27 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
-// FORM FOR NEW PROJETC MODAL 
-$('#addTaskForm').on('submit', function (e) {
-var modal = document.getElementById('modalAddTask');
-
-  e.preventDefault();
-  console.log('Form submitted!');
-
-  $.ajax({
-    url: '/submitAddTask',
-    type: 'POST',
-    data: $(this).serialize(),
-    success: function (response) {
-      //alert('Project created successfully!');
-      modal.style.display = 'none';
-      location.reload(); // Refresh to show the new project
-    },
-    error: function (error) {
-      alert('Error adding task: ' + error.responseText);
-    }
-  });
-});
 
 function initializeAddTaskButton() {
   const addTaskBtn = document.getElementById('newTaskBtn');
