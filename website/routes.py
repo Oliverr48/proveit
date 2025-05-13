@@ -282,7 +282,7 @@ def accept_invite(invite_id):
     # Add the user as a collaborator to the project
     project = Project.query.get_or_404(invite.projectId)
     if current_user not in project.collaborators:
-        project.collaborators.append(current_user)
+        project.collaborators.append(current_user.username)
 
     # Update the activity to indicate the invite was accepted
     invite.action = "Invite accepted"
