@@ -4,6 +4,19 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/project.css') }}">
+<style>
+  /* Add the modal close button styling */
+  .modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: #9ca3af;
+  }
+  
+  .modal-close-btn:hover {
+    color: #6b7280;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -17,9 +30,9 @@
     <i class="fas fa-plus mr-2"></i>New Project
   </button>
 </div>  
-<!-- Modal HTML remains mostly unchanged except for class order -->
+<!-- Modal HTML - FIXED: Close button now properly positioned on the form -->
 <div id="modalNewProject" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96 relative">
     <h3 class="text-lg font-bold text-slate-800 mb-4">Create New Project</h3>
     <form id="newProjectForm">
       <div class="mb-4">
@@ -36,7 +49,11 @@
       </div>
       <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Create Project</button>
     </form>
-    <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+    <button id="closeModalBtn" class="modal-close-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
   </div>
 </div>
 
@@ -134,4 +151,26 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/project.js') }}"></script>
+<script>
+// Additional JavaScript to ensure the close button works correctly
+document.addEventListener('DOMContentLoaded', function() {
+  const newProjectBtn = document.getElementById('newProjectBtn');
+  const modalNewProject = document.getElementById('modalNewProject');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  
+  if (newProjectBtn && modalNewProject) {
+    newProjectBtn.addEventListener('click', function() {
+      modalNewProject.classList.remove('hidden');
+      modalNewProject.style.display = 'flex';
+    });
+  }
+  
+  if (closeModalBtn && modalNewProject) {
+    closeModalBtn.addEventListener('click', function() {
+      modalNewProject.classList.add('hidden');
+      modalNewProject.style.display = 'none';
+    });
+  }
+});
+</script>
 {% endblock %}
