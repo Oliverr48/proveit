@@ -181,7 +181,7 @@
       </div>
       <div>
         <p class="text-sm text-gray-500">Project Collaborators</p>
-        <p class="text-xl font-bold text-gray-800">{{ project.collaborators|default('N/A') }}</p>
+        <p class="text-xl font-bold text-gray-800">{{ project.collaborators| default('N/A') }}</p>
       </div>
     </div>
   </div>
@@ -193,10 +193,30 @@
   <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="newTaskBtn">
     <span class="mr-2">●</span> New Task
   </button>
+  {% if project.owner_id == current_user.id %}
+  <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="openInviteModalBtn">
+    <span class="mr-2">+</span> Invite Users
+  </button>
+  {% endif %}
 </div>
-
+<!-- Invite Users Modal -->
+<div id="inviteModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
+    <h3 class="text-lg font-bold text-slate-800 mb-4">Invite Users</h3>
+    <form id="inviteUserForm">
+      <div class="mb-4">
+        <label for="userSearch" class="block text-sm font-medium text-slate-700">Search for Users</label>
+        <input type="text" id="userSearch" name="userSearch" placeholder="Enter username or email" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+      </div>
+      <input type="hidden" id="project_id" name="project_id" value="{{ project.id }}">
+      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Send Invite</button>
+    </form>
+    <button id="closeInviteModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+  </div>
+</div>
+    
 <!-- Add Task Modal (Only include once) -->
-<div id="modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+<div id = "modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
   <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
     <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
     <form id="addTaskForm">
@@ -213,7 +233,7 @@
         <textarea id="taskCollabs" name="taskCollabs" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
       </div>
       <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
-      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task</button>
+      <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
     </form>
     <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
   </div>
@@ -424,6 +444,7 @@
 
 {% block extra_js %}
 <script src="{{ url_for('static', filename='js/projectdetails.js') }}"></script> 
+<script src="{{ url_for('static', filename='js/invite.js') }}"></script> 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
   // Apply all event listeners after DOM has loaded
