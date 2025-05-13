@@ -272,22 +272,24 @@ def update_subtask_status():
 @routes.route('/accept_invite/<int:invite_id>', methods=['POST'])
 @login_required
 def accept_invite(invite_id):
-    # Fetch the invite activity
+    # 1. Grab the invite
     invite = Activity.query.get_or_404(invite_id)
 
-    # Ensure the invite is for the current user
+    # 2. Make sure it’s really for the logged-in user
     if invite.userId != current_user.id:
         return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
 
-    # Add the user as a collaborator to the project
+    # 3. Add the user as a collaborator on the target project
     project = Project.query.get_or_404(invite.projectId)
+
+    # project.collaborators is a list of User instances
     if current_user not in project.collaborators:
-        project.collaborators.append(current_user.username)
+        project.collaborators.append(current_user)
 
-    # Update the activity to indicate the invite was accepted
+    # 4. Mark the invite as accepted (or set a flag if you have one)
     invite.action = "Invite accepted"
-    db.session.commit()
 
+    db.session.commit()
     return redirect(url_for('routes.inbox'))
 
 
