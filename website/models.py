@@ -79,3 +79,14 @@ class Activity(db.Model):
     user = db.relationship('User', backref='activities')
     project = db.relationship('Project', backref='activities')
     # task = db.relationship('Task', backref='activities')
+
+class EvidenceFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    taskId = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    filePath = db.Column(db.String(200), nullable=False)
+    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+
+    task = db.relationship('Task', backref='evidence_files')
+
+    def __repr__(self):
+        return f'<EvidenceFile {self.filePath}>'
