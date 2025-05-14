@@ -130,6 +130,17 @@
     border-color: #6366f1;
     background-color: #f5f7ff;
   }
+
+  .modal-close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    color: #9ca3af;
+  }
+  
+  .modal-close-btn:hover {
+    color: #6b7280;
+  }
 </style>
 {% endblock %}
 
@@ -187,21 +198,24 @@
   </div>
 </div>
 
-<!-- Task Management Header -->
+<!-- Task Management Header - FIXED: Buttons grouped together on the right -->
 <div class="flex justify-between items-center mb-8">
   <h1 class="text-2xl font-bold text-gray-800">Task Management</h1>
-  <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="newTaskBtn">
-    <span class="mr-2">●</span> New Task
-  </button>
-  {% if project.owner_id == current_user.id %}
-  <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="openInviteModalBtn">
-    <span class="mr-2">+</span> Invite Users
-  </button>
-  {% endif %}
+  <div class="flex space-x-4"> <!-- Added container to group buttons -->
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="newTaskBtn">
+      <span class="mr-2">●</span> New Task
+    </button>
+    {% if project.owner_id == current_user.id %}
+    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg flex items-center" id="openInviteModalBtn">
+      <span class="mr-2">+</span> Invite Users
+    </button>
+    {% endif %}
+  </div>
 </div>
-<!-- Invite Users Modal -->
+
+<!-- Invite Users Modal - FIXED: Close button positioned correctly -->
 <div id="inviteModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96 relative"> <!-- Added relative positioning -->
     <h3 class="text-lg font-bold text-slate-800 mb-4">Invite Users</h3>
     <form id="inviteUserForm">
       <div class="mb-4">
@@ -211,13 +225,17 @@
       <input type="hidden" id="project_id" name="project_id" value="{{ project.id }}">
       <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Send Invite</button>
     </form>
-    <button id="closeInviteModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+    <button id="closeInviteModalBtn" class="modal-close-btn"> <!-- Updated class -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
   </div>
 </div>
     
-<!-- Add Task Modal (Only include once) -->
-<div id = "modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96">
+<!-- Add Task Modal - FIXED: Close button positioned correctly -->
+<div id="modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96 relative"> <!-- Added relative positioning -->
     <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
     <form id="addTaskForm">
       <div class="mb-4">
@@ -235,7 +253,11 @@
       <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
       <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
     </form>
-    <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600"><i class="fas fa-times"></i></button>
+    <button id="closeModalBtn" class="modal-close-btn"> <!-- Updated class -->
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
   </div>
 </div>
 
@@ -376,16 +398,16 @@
   </div>
 </div>
 
-<!-- Evidence Files Modal (hidden by default) -->
+<!-- Evidence Files Modal (hidden by default) - FIXED: Close button positioned correctly -->
 <div class="evidence-modal hidden" id="evidence-modal">
-  <div class="evidence-modal-content">
+  <div class="evidence-modal-content relative"> <!-- Added relative positioning -->
     <!-- Modal Header -->
     <div class="flex justify-between items-start mb-4">
       <div>
         <h3 class="text-lg font-bold text-gray-800">Evidence Files</h3>
         <p class="text-sm text-gray-500" id="evidence-modal-title">Task: Implement responsive design > Create mobile navigation menu</p>
       </div>
-      <button class="text-gray-400 hover:text-gray-600" id="close-evidence-modal">
+      <button class="modal-close-btn" id="close-evidence-modal"> <!-- Updated class -->
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -452,10 +474,12 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeTaskCompleteButton();
   initializeEvidenceModal();
   initializeFileUpload();
+  initializeInviteModal(); // Added function to handle invite modal
 });
 
 // Global variable for the task modal
 let taskModal;
+let inviteModal;
 
 // Initialize the Add Task button and modal
 function initializeAddTaskButton() {
@@ -473,6 +497,27 @@ function initializeAddTaskButton() {
       closeModalBtn.addEventListener('click', function() {
         taskModal.classList.add('hidden');
         taskModal.style.display = 'none';
+      });
+    }
+  }
+}
+
+// Initialize the Invite modal
+function initializeInviteModal() {
+  const inviteBtn = document.getElementById('openInviteModalBtn');
+  inviteModal = document.getElementById('inviteModal');
+  const closeInviteModalBtn = document.getElementById('closeInviteModalBtn');
+  
+  if (inviteBtn && inviteModal) {
+    inviteBtn.addEventListener('click', function() {
+      inviteModal.classList.remove('hidden');
+      inviteModal.style.display = 'flex';
+    });
+    
+    if (closeInviteModalBtn) {
+      closeInviteModalBtn.addEventListener('click', function() {
+        inviteModal.classList.add('hidden');
+        inviteModal.style.display = 'none';
       });
     }
   }
@@ -497,6 +542,26 @@ $(document).ready(function() {
       },
       error: function(error) {
         alert('Error adding task: ' + error.responseText);
+      }
+    });
+  });
+  
+  $('#inviteUserForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    $.ajax({
+      url: '/inviteUser',
+      type: 'POST',
+      data: $(this).serialize(),
+      success: function(response) {
+        if (inviteModal) {
+          inviteModal.classList.add('hidden');
+          inviteModal.style.display = 'none';
+        }
+        alert('Invitation sent successfully!');
+      },
+      error: function(error) {
+        alert('Error sending invitation: ' + error.responseText);
       }
     });
   });

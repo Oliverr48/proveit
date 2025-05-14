@@ -1,6 +1,7 @@
 # To house any objects we may need as classes - e.g project or tasks! 
 from . import db
 from flask_login import UserMixin
+from datetime import datetime
 
 # Many-to-Many relationship table for project collaborators
 project_collaborators = db.Table('project_collaborators',
@@ -46,12 +47,17 @@ class Task(db.Model):
 
     subtasks = db.relationship('Subtask', backref='task', lazy=True)  # Ensure 'Subtask' matches the class name
     project = db.relationship('Project', backref='tasks')
+    # Add relationship to TaskFile
+    files = db.relationship('TaskFile', backref='task', lazy=True, cascade="all, delete-orphan")
 
 class Subtask(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     status = db.Column(db.Integer, default=0)  # 0 for incomplete, 1 for complete
     taskId = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    
+    # Add relationship to TaskFile
+    files = db.relationship('TaskFile', backref='subtask', lazy=True, cascade="all, delete-orphan")
     
     def __repr__(self):
         return f'<Subtask {self.name}>'
@@ -63,6 +69,9 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
+    
+    # Add relationship to TaskFile
+    files = db.relationship('TaskFile', backref='user', lazy=True)
 
     def __str__(self):
         return f"User: {self.username}, Email: {self.email}"
@@ -78,15 +87,20 @@ class Activity(db.Model):
 
     user = db.relationship('User', backref='activities')
     project = db.relationship('Project', backref='activities')
-    # task = db.relationship('Task', backref='activities')
+    task = db.relationship('Task', backref='activities')
 
-class EvidenceFile(db.Model):
+
+# Add the TaskFile model
+class TaskFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    taskId = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
-    filePath = db.Column(db.String(200), nullable=False)
-    timestamp = db.Column(db.DateTime, default=db.func.current_timestamp())
+    filename = db.Column(db.String(255), nullable=False)
+    filepath = db.Column(db.String(512), nullable=False)
+    file_size = db.Column(db.Integer)  # in bytes
+    file_type = db.Column(db.String(50))  # e.g., "image", "document", etc.
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Foreign keys
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    subtask_id = db.Column(db.Integer, db.ForeignKey('subtask.id'), nullable=True)
 
-    task = db.relationship('Task', backref='evidence_files')
-
-    def __repr__(self):
-        return f'<EvidenceFile {self.filePath}>'
