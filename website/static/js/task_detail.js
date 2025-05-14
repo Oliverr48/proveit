@@ -3,9 +3,11 @@
 document.addEventListener('DOMContentLoaded', function() {
   // Initialise all components
   initialiseFileUpload();
+
   initialiseEvidenceModal();
   initialiseTaskControls();
   initialiseSubtaskIcons(); // Add subtask icon click handling
+  addDeleteHandlers();
 });
 
 // Make only the circular subtask icons clickable
@@ -106,6 +108,7 @@ function initialiseEvidenceModal() {
       modalUploadForm.addEventListener('submit', function(e) {
           e.preventDefault();
           uploadFiles(this);
+          console.log("Upload Files has been called!");
       });
   }
 }
@@ -197,6 +200,8 @@ function uploadFiles(form) {
       if (xhr.status >= 200 && xhr.status < 300) {
           const response = JSON.parse(xhr.responseText);
           alert('Files uploaded successfully!');
+
+            location.reload();
           
           // Reload files
           if (form.id === 'modalUploadForm') {
@@ -221,6 +226,8 @@ function uploadFiles(form) {
   xhr.send(formData);
 }
 
+
+/*
 // Load files from server
 function loadFiles(url, containerId) {
   const container = document.getElementById(containerId);
@@ -274,17 +281,16 @@ function loadFiles(url, containerId) {
           container.innerHTML = '<p class="text-red-500">Error loading files.</p>';
       });
 }
-
+ */
 // Add event handlers to delete buttons
 function addDeleteHandlers() {
   document.querySelectorAll('.delete-file-btn').forEach(button => {
       button.addEventListener('click', function() {
-          if (confirm('Are you sure you want to delete this file?')) {
               const fileId = this.dataset.fileId;
-              
+              console.log("File ID to delete: ", fileId);
               fetch('/delete_file/' + fileId, {
                   method: 'POST',
-                  headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                  headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-Requested-With': 'XMLHttpRequest'}
               })
               .then(response => response.json())
               .then(data => {
@@ -298,7 +304,6 @@ function addDeleteHandlers() {
               .catch(error => {
                   alert('Error deleting file.');
               });
-          }
       });
   });
 }

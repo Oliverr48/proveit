@@ -35,4 +35,7 @@ def create_app():
     from .auth import auth
     app.register_blueprint(auth)
 
+    from .routes import upload 
+    app.register_blueprint(upload)
+
     return app

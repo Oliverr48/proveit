@@ -1,9 +1,11 @@
-from flask import Blueprint, render_template, request, redirect, url_for, jsonify
-from .models import Project, Task, User, Activity, Subtask
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify, current_app, send_from_directory
+from .models import Project, Task, User, Activity, Subtask, TaskFile
 from flask_login import login_required, current_user
 from . import db # Import the db object
 from website.models import Project, Task, Subtask  # Add Subtask here
 from datetime import datetime
+from werkzeug.utils import secure_filename
+import os
 
 routes = Blueprint('routes', __name__)
 
@@ -68,6 +70,7 @@ def inbox():
     ).all()
 
     return render_template('inbox.html', invites=invites)
+
 @routes.route('/dashboard')
 @login_required
 def dashboard():
@@ -89,7 +92,10 @@ def dashboard():
 
     recentActivity = Activity.query.order_by(Activity.timestamp.desc()).limit(5).all()
     upcomingTasks = Task.query.filter(Task.parentProject.in_([project.id for project in projects]), Task.status == 0, Task.dueDate >= datetime.now()).order_by(Task.dueDate).limit(4).all()
-    
+
+    # Get the number of evidence files uploaded by the user 
+    evidence_files_count = TaskFile.query.filter_by(user_id=current_user.id).count()
+
     return render_template(
         'dashboard.html',
         user=current_user,
@@ -97,7 +103,8 @@ def dashboard():
         comTasks=comTasks,
         totalTasks=totalTasks,
         activities=recentActivity,
-        upcomingTasks=upcomingTasks
+        upcomingTasks=upcomingTasks, 
+        evidence_files_count=evidence_files_count
     )
 
 @routes.route('/projects')
@@ -227,7 +234,7 @@ def task_detail(task_id):
     subtasks = Subtask.query.filter_by(taskId=task_id).all()
     
     # For now, we're just simulating evidence files
-    evidence_files = []
+    evidence_files = TaskFile.query.filter_by(task_id=task_id).all()
     
     return render_template(
         'task_detail.html',
@@ -349,3 +356,108 @@ def delete_project(project_id):
     db.session.commit()
 
     return redirect(url_for('routes.projects'))
+
+
+
+
+upload = Blueprint('upload', __name__)
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'pdf', 'txt', 'zip'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@upload.route('/upload_evidence', methods=['POST'])
+def upload_evidence():
+    files = request.files.getlist('files[]')
+    task_id = request.form.get('task_id')
+    subtask_id = request.form.get('subtask_id') or None
+    
+    task = Task.query.get(task_id)
+
+    upload_folder = os.path.join(current_app.root_path, 'static', 'uploads')
+
+    if not os.path.exists(upload_folder):
+        os.makedirs(upload_folder)
+
+    saved_files = []
+
+    for file in files:
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            filepath = os.path.join(upload_folder, filename)
+
+            # Prevent filename collisions
+            base, ext = os.path.splitext(filename)
+            counter = 1
+            while os.path.exists(filepath):
+                filename = f"{base}_{counter}{ext}"
+                filepath = os.path.join(upload_folder, filename)
+                counter += 1
+
+            file.save(filepath)
+
+            task_file = TaskFile(
+                filename=filename,
+                filepath=filepath,
+                file_size=os.path.getsize(filepath),
+                file_type=file.content_type,
+                user_id=current_user.id,
+                task_id=task_id,
+                subtask_id=subtask_id,
+                upload_date=datetime.utcnow()
+            )
+            db.session.add(task_file)
+            saved_files.append(filename)
+        
+        new_activity = Activity(
+            userId=current_user.id,
+            projectId=task.parentProject,
+            taskId=task_id,
+            action=f"Evidence file uploaded: {filename}"
+        )
+
+        db.session.add(new_activity)
+
+    db.session.commit()
+    return jsonify(success=True, files=saved_files)
+    return redirect(url_for('routes.task_detail', task_id=task_id))
+
+@upload.route('/download_file/<int:file_id>')
+@login_required
+def download_file(file_id):
+    task_file = TaskFile.query.get_or_404(file_id)
+    
+    # Extract just the filename from the full path (secure)
+    filename = os.path.basename(task_file.filepath)
+
+    # Serve the file from the uploads directory
+    return send_from_directory(
+        os.path.join(current_app.root_path, 'static', 'uploads'),
+        filename,
+        as_attachment=True
+    )
+
+@upload.route('/delete_file/<int:file_id>', methods=['POST'])
+@login_required
+def delete_file(file_id):
+    task_file = TaskFile.query.get_or_404(file_id)
+    print("We are here!")
+    # Optional: Check ownership or permission
+    if task_file.user_id != current_user.id:
+        return jsonify(success=False, message="You do not have permission to delete this file."), 403
+
+    # Delete the actual file from disk
+    try:
+        os.remove(task_file.filepath)
+    except OSError:
+        pass  # File might not exist; log if necessary
+
+    db.session.delete(task_file)
+    db.session.commit()
+
+    # If it's a JS request, return JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify(success=True)
+    
+    return redirect(url_for('routes.task_detail', task_id=task_id))

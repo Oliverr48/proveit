@@ -373,13 +373,37 @@
   <!-- Existing files section -->
   <div class="mb-8">
     <h3 class="text-lg font-medium text-gray-800 mb-3">Uploaded Evidence</h3>
-    <div id="existingFiles" data-task-id="{{ task.id }}">
-      <!-- Files will be loaded dynamically -->
-      <p class="text-gray-500">Loading files...</p>
+     {% for file in evidence_files %}
+
+      <div class="file-item">
+    <div class="file-icon">{{ file.filename.rsplit('.', 1)[1].upper() if '.' in file.filename else '' }}</div>
+    <div class="flex-1">
+      <div class="text-sm font-medium text-gray-800"> {{file.filename}}</div>
+      <div class="text-xs text-gray-500">{{ file.file_size }} • Uploaded by {{ file.user_id.user }} on {{ file.upload_date }}</div>
+    </div>
+    <div class="flex items-center">
+      <a href="{{ url_for('upload.download_file', file_id=file.id) }}" class="text-gray-400 hover:text-gray-600 mx-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      </a>
+          <button class="text-gray-400 hover:text-gray-600 delete-file-btn" data-file-id="{{ file.id }}">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
     </div>
   </div>
-</div>
+  {% endfor %}
+  
+  {% if not evidence_files %}
+    <p class="text-gray-500">No evidence files uploaded yet.</p>
+  {% endif %}
 
+</div>
+  
 <!-- Evidence Files Modal (hidden by default) -->
 <div class="evidence-modal hidden" id="evidence-modal">
   <div class="evidence-modal-content relative">
