@@ -148,7 +148,7 @@ def submitAddTask():
     # Get the form data
     print("We are here in the task submit bit!")
     name = request.form['taskName']
-    collabs = request.form['taskCollabs']
+    description = request.form['taskDescription']  # Changed from taskCollabs to taskDescription
     dueDate = request.form['taskDueDate']
     parentProject = request.form.get('project_id')  # Get the parent project ID from the form
 
@@ -158,7 +158,8 @@ def submitAddTask():
     # Create a new task instance
     new_task = Task(
         name=name,
-        collabs=collabs,
+        description=description,  # Store the description in the description field
+        collabs="Unassigned",  # Set a default value as collabs field is non-nullable
         dueDate=dueDate,
         parentProject=parentProject,
         status=0  
@@ -174,7 +175,7 @@ def submitAddTask():
         action=f"New task added"
     )
 
-    print("New task created: ", new_task.name, new_task.collabs, new_task.dueDate, new_task.parentProject)
+    print("New task created: ", new_task.name, new_task.description, new_task.dueDate, new_task.parentProject)
     # Add the new task to the database session and commit
     db.session.add(new_activity)
     db.session.commit()

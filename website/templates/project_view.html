@@ -246,10 +246,10 @@
         <label for="taskDueDate" class="block text-sm font-medium text-slate-700">Due Date</label>
         <input type="date" id="taskDueDate" name="taskDueDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
       </div>
-      <div class="mb-4">
-        <label for="taskCollabs" class="block text-sm font-medium text-slate-700">Collaborators</label>
-        <textarea id="taskCollabs" name="taskCollabs" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-      </div>
+    <div class="mb-4">
+      <label for="taskDescription" class="block text-sm font-medium text-slate-700">Description</label>
+      <textarea id="taskDescription" name="taskDescription" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+    </div>
       <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
       <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
     </form>
