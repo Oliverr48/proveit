@@ -86,13 +86,18 @@ def dashboard():
     totalTasks = Task.query.filter(Task.parentProject.in_(
         [project.id for project in projects]
     )).all()
+
+    recentActivity = Activity.query.order_by(Activity.timestamp.desc()).limit(5).all()
+    upcomingTasks = Task.query.filter(Task.parentProject.in_([project.id for project in projects]), Task.status == 0, Task.dueDate >= datetime.now()).order_by(Task.dueDate).limit(4).all()
     
     return render_template(
         'dashboard.html',
         user=current_user,
         projects=projects,
         comTasks=comTasks,
-        totalTasks=totalTasks
+        totalTasks=totalTasks,
+        activities=recentActivity,
+        upcomingTasks=upcomingTasks
     )
 
 @routes.route('/projects')

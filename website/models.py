@@ -89,6 +89,7 @@ class Activity(db.Model):
     project = db.relationship('Project', backref='activities')
     task = db.relationship('Task', backref='activities')
 
+
 # Add the TaskFile model
 class TaskFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -102,3 +103,4 @@ class TaskFile(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
     subtask_id = db.Column(db.Integer, db.ForeignKey('subtask.id'), nullable=True)
+
