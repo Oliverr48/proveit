@@ -11,7 +11,7 @@ def test_login(client):
         'email': 'wrong@example.com',
         'password': 'wrongpassword'
     }, follow_redirects=True)
-    assert b'Login Failed' in response.data or b'Incorrect Email/Password' in response.data
+    assert b'Login failed' in response.data or b'Incorrect Email/Password' in response.data
     
     # Test valid login
     response = client.post('/login', data={
@@ -33,6 +33,7 @@ def test_create_project(logged_in_client, app):
         'projectDescription': 'Project created in test',
         'projectDueDate': '2025-12-31'
     })
+
     
     assert response.status_code == 200
     assert b'Project created successfully' in response.data or response.get_json().get('message') == 'Project created successfully'
@@ -42,7 +43,8 @@ def test_create_project(logged_in_client, app):
         project = Project.query.filter_by(name='New Project').first()
         assert project is not None
         assert project.description == 'Project created in test'
-
+        
+    
 def test_projects_list(logged_in_client, test_project):
     """Test the projects list page."""
     response = logged_in_client.get('/projects')
@@ -144,6 +146,6 @@ def test_create_subtask(logged_in_client, app, test_project):
     
     # Verify subtask was created
     with app.app_context():
-        subtask = Subtask.query.filter_by(name='New Subtask').first()
+        subtask = Subtask.query.filter_by(name='New Subtask', taskId=task_id).first()
         assert subtask is not None
         assert subtask.taskId == task_id

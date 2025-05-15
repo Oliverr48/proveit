@@ -95,4 +95,4 @@ def test_project(app):
         # Get the ID before yielding (to avoid detached instance errors)
         project_id = project.id
         
-        yield {'project': project, 'id': project_id}
+        yield project

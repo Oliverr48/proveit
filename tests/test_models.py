@@ -74,7 +74,7 @@ def test_project_task_relationship(app, test_project):
     """Test the relationship between projects and tasks."""
     with app.app_context():
         # Use the project ID to get a fresh project instance
-        project_id = test_project['id']
+        project_id = test_project.id
         project = Project.query.get(project_id)
         
         # Create tasks for the project
@@ -115,7 +115,7 @@ def test_task_subtask_relationship(app, test_project):
     """Test the relationship between tasks and subtasks."""
     with app.app_context():
         # Use the project ID to get a fresh project instance
-        project_id = test_project['id']
+        project_id = test_project.id
         project = Project.query.get(project_id)
         
         # Create a task
@@ -158,7 +158,7 @@ def test_task_completion(app, test_project):
     """Test marking a task as complete."""
     with app.app_context():
         # Use the project ID to get a fresh project instance
-        project_id = test_project['id']
+        project_id = test_project.id
         project = Project.query.get(project_id)
         
         # Create a task
