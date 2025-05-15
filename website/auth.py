@@ -58,7 +58,11 @@ def signup():
         if user:
             flash('Email already exists.', category='error')
             error = True
-            
+        
+        usernameCheck = User.query.filter_by(username=username).first()
+        if usernameCheck:
+            flash('Username already exists.', category='error')
+            error = True            
         # Add all validation checks
         if len(email) < 4:
             flash('Email must be greater than 3 characters.', category='error')
