@@ -39,6 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }),
         })
             .then((response) => response.json())
+
             .then((data) => {
                 if (data.status === 'success') {
                     alert(data.message);
