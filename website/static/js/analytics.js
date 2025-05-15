@@ -152,7 +152,7 @@ async function initTopContributorsChart() {
     const result = await response.json();
     
     // If no data, show a message
-    if (!result.labels || result.labels.length === 0) {
+    if (!result || result.length === 0) {
       container.innerHTML = `
         <div class="placeholder">
           <div>No contributor data available</div>
@@ -161,14 +161,16 @@ async function initTopContributorsChart() {
       return;
     }
     
+    console.log('Contributors API result:', result);
+    
     // Process the data to create the top contributors visualization
-    const contributors = result.labels.map((name, index) => ({
-      name: name,
-      taskCount: result.data[index],
-      role: 'Team Member', // Default role if not available from API
-      color: Object.values(CHART_COLORS)[index % Object.values(CHART_COLORS).length],
-      initials: name.split(' ').map(part => part[0]).join('')
-    }));
+  const contributors = result.map((item, index) => ({
+    name: item.full_name,
+    taskCount: item.task_count,
+    role: item.role,
+    color: Object.values(CHART_COLORS)[index % Object.values(CHART_COLORS).length],
+    initials: item.full_name.split(' ').map(part => part[0]).join('')
+  }));
     
     // Sort contributors by task count (descending)
     contributors.sort((a, b) => b.taskCount - a.taskCount);
@@ -192,7 +194,7 @@ async function initTopContributorsChart() {
           <div class="contributor-info flex-grow">
             <div class="flex justify-between mb-1">
               <div>
-                <div class="font-semibold text-gray-800">${contributor.name}</div>
+                <div class="font-semibold text-gray-800">${contributor.username}</div>
                 <div class="text-sm text-gray-500">${contributor.role}</div>
               </div>
               <div class="font-bold text-gray-700">${contributor.taskCount}t</div>
