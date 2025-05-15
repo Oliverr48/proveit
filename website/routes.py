@@ -490,39 +490,47 @@ def team_performance_analytics():
     Calculates the top contributors based on task completion.
     Returns data formatted for visualization.
     """
-    # Get projects accessible to the current user
     projects = Project.query.filter(
         (Project.owner_id == current_user.id) | 
         (Project.collaborators.any(id=current_user.id))
     ).all()
-    
-    # Dictionary to store contributor task counts
+
     contributor_tasks = {}
-    
-    # For each project, count tasks per contributor
+
     for project in projects:
-        # Get all tasks for this project
         tasks = Task.query.filter_by(parentProject=project.id).all()
-        
+
         for task in tasks:
-            # Split contributors string and count tasks for each
             if task.collabs:
-                contributors = [name.strip() for name in task.collabs.split(',') if name.strip()]
-                for contributor in contributors:
-                    # For completed tasks, add 1 to the count
+                contributor_usernames = [name.strip() for name in task.collabs.split(',') if name.strip()]
+                for username in contributor_usernames:
                     if task.status == 1:
-                        contributor_tasks[contributor] = contributor_tasks.get(contributor, 0) + 1
-    
-    # Sort contributors by task count (descending)
-    sorted_contributors = sorted(contributor_tasks.items(), key=lambda x: x[1], reverse=True)
-    
-    # Extract top contributors
-    top_contributors = sorted_contributors[:10]  # Limit to top 10
-    
-    return jsonify({
-        'labels': [contributor[0] for contributor in top_contributors],
-        'data': [contributor[1] for contributor in top_contributors]
-    })
+                        contributor_tasks[username] = contributor_tasks.get(username, 0) + 1
+
+    # Now convert usernames to user info
+    contributor_data = []
+    for username, task_count in contributor_tasks.items():
+        user = User.query.filter_by(username=username).first()
+        if user:
+            contributor_data.append({
+                'username': user.username,
+                'full_name': f'{user.first_name} {user.last_name}' if user.first_name else user.username,
+                'role': user.role if hasattr(user, 'role') else 'Team Member',
+                'task_count': task_count
+            })
+        else:
+            # Handle case where username doesn't exist in DB
+            contributor_data.append({
+                'username': username,
+                'full_name': username,
+                'role': 'Unassigned',
+                'task_count': task_count
+            })
+
+    # Sort and take top 10
+    top_contributors = sorted(contributor_data, key=lambda x: x['task_count'], reverse=True)[:10]
+
+    return jsonify(top_contributors)
 
 @routes.route('/api/project-performance-analytics')
 @login_required
