@@ -193,6 +193,11 @@ def project_view(project_id):
     ).first_or_404()
 
     tasks = Task.query.filter_by(parentProject=project.id).all()
+    
+    # Add subtask counts to each task
+    for task in tasks:
+        task.subtask_count = Subtask.query.filter_by(taskId=task.id).count()
+        
     return render_template('project_view.html', project=project, tasks=tasks)
 
 @routes.route('/completeTask', methods=['POST'])
@@ -663,3 +668,33 @@ def avg_time_to_complete():
         'data': data,
         'average': average
     })
+
+@routes.route('/assign_task', methods=['POST'])
+@login_required
+def assign_task():
+    task_id = request.form.get('task_id')
+    assignee = request.form.get('assignee')
+    
+    task = Task.query.get_or_404(task_id)
+    project = Project.query.get_or_404(task.parentProject)
+    
+    # Security check: ensure user is either project owner or collaborator
+    if not (project.owner_id == current_user.id or current_user in project.collaborators):
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
+    
+    # Update task assignment - make sure to store the full name without truncation
+    task.collabs = assignee if assignee else "Unassigned"
+    
+    # Create activity log
+    activity_message = f"Task assigned to {assignee}" if assignee else "Task unassigned"
+    activity = Activity(
+        userId=current_user.id,
+        projectId=project.id,
+        taskId=task.id,
+        action=activity_message
+    )
+    
+    db.session.add(activity)
+    db.session.commit()
+    
+    return jsonify({'status': 'success'})

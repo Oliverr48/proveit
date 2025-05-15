@@ -242,28 +242,42 @@
     <span>{{ task.name }}</span>
   </div>
   
-  <!-- Task Header -->
-  <div class="mb-6">
+<!-- Task Header -->
+<div class="mb-6">
+  <div class="flex justify-between items-center">
     <h2 class="text-2xl font-bold text-gray-800 mb-3">{{ task.name }}</h2>
-    <div class="flex space-x-3">
-      <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
-        {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
+    
+    <!-- Task assignment button -->
+    <button id="openAssignTaskBtn" class="text-sm px-3 py-1 bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100 flex items-center">
+      <i class="fas fa-user-plus mr-1"></i>
+      {% if task.collabs and task.collabs != "Unassigned" %}
+        Reassign
+      {% else %}
+        Assign
+      {% endif %}
+    </button>
+  </div>
+  <div class="flex space-x-3">
+    <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
+      {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
+    </span>
+    <span class="category-badge">{{ task.category or 'Frontend' }}</span>
+    
+    <!-- Assignment badge -->
+    {% if task.collabs and task.collabs != "Unassigned" %}
+      <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs flex items-center">
+        <i class="fas fa-user mr-1"></i>
+        <span class="truncate max-w-xs">{{ task.collabs }}</span>
       </span>
-      <span class="category-badge">{{ task.category or 'Frontend' }}</span>
-    </div>
+    {% else %}
+      <span class="px-3 py-1 bg-gray-50 text-gray-500 rounded-full text-xs flex items-center">
+        <i class="fas fa-user-plus mr-1"></i>
+        Unassigned
+      </span>
+    {% endif %}
   </div>
-  
-  <!-- Assignee info in top right -->
-  <div class="absolute top-6 right-6 flex items-center">
-    <div class="avatar {{ 'avatar-jd' if 'John' in task.collabs else 'avatar-bj' }}">
-      {{ task.collabs[0:2] if task.collabs else 'JD' }}
-    </div>
-    <div class="ml-2">
-      <div class="text-sm font-medium">{{ task.collabs }}</div>
-      <div class="text-xs text-gray-500">{{ task.collabs }}@example.com</div>
-    </div>
-  </div>
-  
+</div>
+
   <!-- Description -->
   <div class="mb-8">
     <h3 class="text-lg font-medium text-gray-800 mb-2">Description</h3>
@@ -459,6 +473,41 @@
         Upload Files
       </button>
     </form>
+  </div>
+</div>
+
+<!-- Task Assignment Modal -->
+<div id="assignTaskModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96 relative">
+    <h3 class="text-lg font-bold text-slate-800 mb-4">Assign Task</h3>
+    <form id="assignTaskForm">
+      <div class="mb-4">
+        <label for="assigneeSelect" class="block text-sm font-medium text-slate-700">Select Assignee</label>
+        <select id="assigneeSelect" name="assignee" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+          <option value="">Unassigned</option>
+          <!-- Project owner -->
+          <option value="{{ project.owner.username }}">{{ project.owner.firstName }} {{ project.owner.lastName }} (Owner)</option>
+          <!-- Project collaborators -->
+          {% for collaborator in project.collaborators %}
+            <option value="{{ collaborator.username }}">{{ collaborator.firstName }} {{ collaborator.lastName }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <input type="hidden" name="task_id" value="{{ task.id }}">
+      <div class="flex justify-end space-x-3">
+        <button type="button" id="closeAssignModalBtn" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">
+          Cancel
+        </button>
+        <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+          Assign Task
+        </button>
+      </div>
+    </form>
+    <button class="modal-close-btn" id="closeAssignModalBtnX">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
   </div>
 </div>
 {% endblock %}

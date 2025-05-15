@@ -3,13 +3,12 @@
 document.addEventListener('DOMContentLoaded', function() {
   // Initialise all components
   initialiseFileUpload();
-
   initialiseEvidenceModal();
   initialiseTaskControls();
   initialiseSubtaskIcons(); // Add subtask icon click handling
   addDeleteHandlers();
+  initialiseTaskAssignmentModal(); // Add this new line
 });
-
 // Make only the circular subtask icons clickable
 function initialiseSubtaskIcons() {
   // Get only the circle icons (both complete and incomplete)
@@ -362,5 +361,63 @@ function initialiseTaskControls() {
           })
           .catch(error => console.error('Error:', error));
       });
+  }
+}
+
+// Initialize Task Assignment Modal
+function initialiseTaskAssignmentModal() {
+  const openModalBtn = document.getElementById('openAssignTaskBtn');
+  const assignModal = document.getElementById('assignTaskModal');
+  const closeModalBtn = document.getElementById('closeAssignModalBtn');
+  const closeModalBtnX = document.getElementById('closeAssignModalBtnX');
+  const assignTaskForm = document.getElementById('assignTaskForm');
+  
+  if (openModalBtn && assignModal) {
+    openModalBtn.addEventListener('click', function() {
+      assignModal.classList.remove('hidden');
+    });
+    
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', function() {
+        assignModal.classList.add('hidden');
+      });
+    }
+    
+    if (closeModalBtnX) {
+      closeModalBtnX.addEventListener('click', function() {
+        assignModal.classList.add('hidden');
+      });
+    }
+  }
+  
+  if (assignTaskForm) {
+    assignTaskForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const taskId = this.elements['task_id'].value;
+      const assignee = this.elements['assignee'].value;
+      
+      fetch('/assign_task', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({
+          'task_id': taskId,
+          'assignee': assignee
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.status === 'success') {
+          if (assignModal) {
+            assignModal.classList.add('hidden');
+          }
+          // Reload page to show updated assignment
+          window.location.reload();
+        } else {
+          alert('Error assigning task: ' + (data.message || 'Unknown error'));
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    });
   }
 }
