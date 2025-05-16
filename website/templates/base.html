@@ -103,6 +103,26 @@
 
   <script src="{{ url_for('static', filename='js/script.js') }}"></script>
   <script src="{{ url_for('static', filename='js/toasts.js') }}"></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const avatar = document.getElementById('profileAvatar');
+    const dropdown = document.getElementById('profileDropdown');
+    if (avatar && dropdown) {
+      avatar.addEventListener('click', function(e) {
+        dropdown.classList.toggle('hidden');
+        e.stopPropagation();
+      });
+      // Hide dropdown when clicking outside
+      document.addEventListener('click', function() {
+        dropdown.classList.add('hidden');
+      });
+      // Prevent closing when clicking inside the dropdown
+      dropdown.addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
+    }
+  });
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>
