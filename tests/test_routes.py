@@ -1,4 +1,5 @@
 import pytest
+import datetime
 from website.models import User, Project, Task, Subtask
 from website import db
 from werkzeug.security import generate_password_hash
@@ -62,7 +63,7 @@ def test_create_task(logged_in_client, test_project, app):
     response = logged_in_client.post('/submitAddTask', data={
         'taskName': 'New Task',
         'taskDescription': 'Task created in test',
-        'taskDueDate': '2025-12-31',
+        'taskDueDate': datetime.date(2025, 12, 31),
         'project_id': test_project.id
     })
     
@@ -85,7 +86,7 @@ def test_complete_task(logged_in_client, app, test_project):
         task = Task(
             name='Task to Complete',
             description='This task will be completed',
-            dueDate='2025-12-31',
+            dueDate=datetime.date(2025, 12, 31),
             status=0,  # In progress
             parentProject=test_project.id,
             collabs='Test User'  # Required field
@@ -100,9 +101,15 @@ def test_complete_task(logged_in_client, app, test_project):
         'task_id': task_id
     })
     
-    assert response.status_code == 200
+    json_data = response.get_json() 
+    """assert response.status_code == 200
     assert b'Task completed successfully' in response.data or response.get_json().get('message') == 'Task completed successfully'
-    
+    """
+
+    assert json_data['message'] in [
+    "Task completed and approved",
+    "Task marked complete - awaiting approval"
+    ]
     # Verify task is completed and project counters updated
     with app.app_context():
         updated_task = Task.query.get(task_id)
@@ -119,7 +126,7 @@ def test_create_subtask(logged_in_client, app, test_project):
         task = Task(
             name='Task with Subtasks',
             description='This task will have subtasks',
-            dueDate='2025-12-31',
+            dueDate=datetime.date(2025, 12, 31),
             status=0,  # In progress
             parentProject=test_project.id,
             collabs='Test User'  # Required field

@@ -3,7 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initAvgTimeToCompleteChart();
   initTopContributorsChart();
-  initProjectCompletionChart();
+  initProjectCompletionChart();n
 });
 
 // Color palette for charts
@@ -142,81 +142,56 @@ async function initAvgTimeToCompleteChart() {
  */
 async function initTopContributorsChart() {
   const container = document.getElementById('topContributorsContainer');
-  
   try {
     const response = await fetch('/api/team-performance-analytics');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
-    const result = await response.json();
-    
-    // If no data, show a message
-    if (!result || result.length === 0) {
-      container.innerHTML = `
-        <div class="placeholder">
-          <div>No contributor data available</div>
-        </div>
-      `;
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+    if (!data || data.length === 0) {
+      container.innerHTML = `<div class="placeholder"><div>No contributor data available</div></div>`;
       return;
     }
-    
-    console.log('Contributors API result:', result);
-    
-    // Process the data to create the top contributors visualization
-  const contributors = result.map((item, index) => ({
-    name: item.full_name,
-    taskCount: item.task_count,
-    role: item.role,
-    color: Object.values(CHART_COLORS)[index % Object.values(CHART_COLORS).length],
-    initials: item.full_name.split(' ').map(part => part[0]).join('')
-  }));
-    
-    // Sort contributors by task count (descending)
+
+    const contributors = data.flatMap((item, index) => {
+      const color = Object.values(CHART_COLORS)[index % Object.values(CHART_COLORS).length];
+      const initials = item.full_name.split(' ').map(p => p[0]).join('');
+      return item.projects.map(project => ({
+        username: item.username,
+        name: item.full_name,
+        role: item.role,
+        taskCount: project.task_count,
+        project: project.project_name,
+        initials,
+        color
+      }));
+    });
+
     contributors.sort((a, b) => b.taskCount - a.taskCount);
-    
-    // Take top 4 contributors
-    const topContributors = contributors.slice(0, 4);
-    
-    // Find the maximum task count for scaling the progress bars
-    const maxTasks = Math.max(...topContributors.map(c => c.taskCount));
-    
-    // Generate HTML for each contributor
-    const contributorsHTML = topContributors.map(contributor => {
-      const progressWidth = (contributor.taskCount / maxTasks) * 100;
-      
-      return `
-        <div class="contributor-item flex items-center mb-6">
-          <div class="contributor-avatar w-12 h-12 rounded-full flex items-center justify-center mr-4" 
-               style="background-color: ${contributor.color}20">
-            <span class="text-lg font-semibold" style="color: ${contributor.color}">${contributor.initials}</span>
+    const top = contributors.slice(0, 3);
+    const max = Math.max(...top.map(c => c.taskCount));
+
+    const html = top.map(c => `
+      <div class="contributor-item flex items-center mb-6">
+        <div class="contributor-avatar w-12 h-12 rounded-full flex items-center justify-center mr-4" style="background-color: ${c.color}20">
+          <span class="text-lg font-semibold" style="color: ${c.color}">${c.initials}</span>
+        </div>
+        <div class="contributor-info flex-grow">
+          <div class="flex justify-between mb-1">
+            <div>
+              <div class="font-semibold text-gray-800">${c.username}</div>
+              <div class="text-sm text-gray-500">${c.project}</div>
+            </div>
+            <div class="font-bold text-gray-700">${c.taskCount}t</div>
           </div>
-          <div class="contributor-info flex-grow">
-            <div class="flex justify-between mb-1">
-              <div>
-                <div class="font-semibold text-gray-800">${contributor.username}</div>
-                <div class="text-sm text-gray-500">${contributor.role}</div>
-              </div>
-              <div class="font-bold text-gray-700">${contributor.taskCount}t</div>
-            </div>
-            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div class="h-full rounded-full" 
-                   style="width: ${progressWidth}%; background-color: ${contributor.color}"></div>
-            </div>
+          <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div class="h-full rounded-full" style="width: ${(c.taskCount / max) * 100}%; background-color: ${c.color}"></div>
           </div>
         </div>
-      `;
-    }).join('');
-    
-    container.innerHTML = contributorsHTML;
-    
+      </div>`).join('');
+
+    container.innerHTML = html;
   } catch (error) {
     console.error('Error fetching contributor data:', error);
-    container.innerHTML = `
-      <div class="placeholder">
-        <div>Error loading contributor data. Please try again later.</div>
-      </div>
-    `;
+    container.innerHTML = `<div class="placeholder"><div>Error loading contributor data.</div></div>`;
   }
 }
 
@@ -227,30 +202,26 @@ async function initTopContributorsChart() {
 async function initProjectCompletionChart() {
   const ctx = document.getElementById('projectCompletionChart').getContext('2d');
   const legendContainer = document.getElementById('projectChartLegend');
-  
   try {
     const response = await fetch('/api/project-performance-analytics');
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     const result = await response.json();
-    
-    // Assign colors to datasets
+
     const colorKeys = Object.keys(CHART_COLORS);
-    result.datasets.forEach((dataset, index) => {
-      const colorKey = colorKeys[index % colorKeys.length];
-      dataset.borderColor = CHART_COLORS[colorKey];
-      dataset.backgroundColor = CHART_COLORS[colorKey] + '20';
-      dataset.tension = 0.3;
-      dataset.borderWidth = 2;
-      dataset.pointBackgroundColor = CHART_COLORS[colorKey];
-      dataset.pointRadius = 3;
-      dataset.pointHoverRadius = 5;
+    result.datasets.forEach((dataset, i) => {
+      const color = CHART_COLORS[colorKeys[i % colorKeys.length]];
+      Object.assign(dataset, {
+        borderColor: color,
+        backgroundColor: color + '20',
+        tension: 0.3,
+        borderWidth: 2,
+        pointBackgroundColor: color,
+        pointRadius: 3,
+        pointHoverRadius: 5
+      });
     });
-    
-    // Create the chart
-    window.projectCompletionChart = new Chart(ctx, {
+
+    new Chart(ctx, {
       type: 'line',
       data: result,
       options: {
@@ -260,64 +231,33 @@ async function initProjectCompletionChart() {
           y: {
             beginAtZero: true,
             max: 100,
-            title: {
-              display: true,
-              text: 'Completion Percentage'
-            },
-            ticks: {
-              callback: function(value) {
-                return value + '%';
-              }
-            },
-            grid: {
-              color: 'rgba(0, 0, 0, 0.05)'
-            }
+            title: { display: true, text: 'Completion %' },
+            ticks: { callback: v => v + '%' },
+            grid: { color: 'rgba(0,0,0,0.05)' }
           },
           x: {
-            grid: {
-              display: false
-            }
+            title: { display: true, text: 'Weeks Since Project Creation' },
+            grid: { display: false }
           }
         },
-        interaction: {
-          intersect: false,
-          mode: 'index'
-        },
         plugins: {
-          legend: {
-            display: false
-          },
+          legend: { display: false },
           tooltip: {
             callbacks: {
-              label: function(context) {
-                return `${context.dataset.label}: ${context.raw}% complete`;
-              }
+              label: ctx => `${ctx.dataset.label}: ${ctx.raw}% complete`
             }
           }
         }
       }
     });
-    
-    // Generate custom legend
-    if (legendContainer) {
-      const legendHTML = result.datasets.map((dataset, index) => {
-        return `
-          <div class="legend-item flex items-center mr-4">
-            <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${dataset.borderColor}"></div>
-            <span class="text-sm text-gray-700">${dataset.label}</span>
-          </div>
-        `;
-      }).join('');
-      
-      legendContainer.innerHTML = legendHTML;
-    }
-    
-  } catch (error) {
-    console.error('Error fetching project completion data:', error);
-    document.getElementById('projectCompletionChart').closest('.card-content').innerHTML = `
-      <div class="placeholder">
-        <div>Error loading project completion data. Please try again later.</div> 
-      </div>
-    `;
+
+    legendContainer.innerHTML = result.datasets.map(d => `
+      <div class="legend-item flex items-center mr-4">
+        <div class="w-3 h-3 rounded-full mr-2" style="background-color: ${d.borderColor}"></div>
+        <span class="text-sm text-gray-700">${d.label}</span>
+      </div>`).join('');
+  } catch (err) {
+    console.error('Error fetching project completion data:', err);
+    ctx.closest('.card-content').innerHTML = `<div class="placeholder"><div>Error loading project completion data. Please try again later.</div></div>`;
   }
 }

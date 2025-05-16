@@ -14,20 +14,21 @@
     <div>
       <h1 class="text-2xl font-bold text-gray-800">{{ project.name }}</h1>
       <p class="text-sm text-gray-500">Due {{ project.dueDate }}</p>
-    </div>
-  </div>
 
-  {% if project.owner_id == current_user.id %}
-  <div class="mt-4 flex items-center">
-    <label class="inline-flex items-center cursor-pointer">
-      <input id="approvalToggle" type="checkbox" class="sr-only peer" 
+    </div>
+     {% if project.owner_id == current_user.id %}
+    <div class="mt-4 flex items-center">
+      <label class="inline-flex items-center cursor-pointer">
+        <input id="approvalToggle" type="checkbox" class="sr-only peer" 
              {% if project.approval_required %}checked{% endif %}
              data-project-id="{{ project.id }}">
-      <div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-indigo-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-      <span class="ml-3 text-sm font-medium text-gray-700">Require task approval</span>
-    </label>
+        <div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-indigo-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+        <span class="ml-3 text-sm font-medium text-gray-700">Require task approval</span>
+      </label>
+    </div>
+  {% endif %}
   </div>
-{% endif %}
+
 
   <!-- Progress Bar -->
   <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
@@ -118,7 +119,15 @@
       </div>
       <div class="mb-4">
         <label for="taskDueDate" class="block text-sm font-medium text-slate-700">Due Date</label>
-        <input type="date" id="taskDueDate" name="taskDueDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+        <input
+          type="date"
+          id="taskDueDate"
+          name="taskDueDate"
+          class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          required
+          min="{{ today }}"
+          max="{{ project.dueDate }}"
+        >
       </div>
       <div class="mb-4">
         <label for="taskDescription" class="block text-sm font-medium text-slate-700">Description</label>
@@ -247,6 +256,4 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/projectdetails.js') }}"></script>
-<script src="{{ url_for('static', filename='js/invite.js') }}"></script>
 {% endblock %}

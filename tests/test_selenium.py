@@ -23,46 +23,17 @@ import urllib.error
 
 def run_app(db_path):
     #app = create_app()
-    app = create_app()
+    db_uri = f'sqlite:///{db_path}'
+    os.environ['DATABASE_URL'] = db_uri
+    app = create_app(testing=True)
     app.config.update({
         'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': db_path,
+        'SQLALCHEMY_DATABASE_URI': db_uri,
         'WTF_CSRF_ENABLED': False,
         'DEBUG': True,
         'SERVER_NAME': None,  # Required for test server to work
     })
-    with app.app_context():
-        db.create_all()
-    print("Starting the Flask app...")
-    app.run(port=5000, use_reloader=False)
 
-def check_if_server_is_up():
-    try:
-        with urllib.request.urlopen("http://127.0.0.1:5000") as response:
-            return response.status == 200
-    except urllib.error.URLError as e:
-        print(f"Server not up yet: {e}")
-        return False
-
-@pytest.fixture(scope='module')
-def browser_and_server():
-    chrome_options = Options()
-    chrome_options.add_argument("--headless=new")
-    chrome_options.add_argument("--no-sandbox")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-
-    db_fd, db_path = tempfile.mkstemp()
-    os.close(db_fd)
-
-    # Create app for DB setup only
-    app = create_app()
-    app.config.update({
-        'TESTING': True,
-        'SQLALCHEMY_DATABASE_URI': 'sqlite:///{db_path}',
-        'WTF_CSRF_ENABLED': False,
-    })
-
-    # Setup DB and test user in *main thread's* app
     with app.app_context():
         db.drop_all()
         db.create_all()
@@ -84,8 +55,41 @@ def browser_and_server():
         db.session.add(inviteUser)
         db.session.commit()
 
+    print("Starting the Flask app...")
+    print("Running with DB URI:", app.config['SQLALCHEMY_DATABASE_URI'])
+    app.run(port=5000, use_reloader=False)
+
+def check_if_server_is_up():
+    try:
+        with urllib.request.urlopen("http://127.0.0.1:5000") as response:
+            return response.status == 200
+    except urllib.error.URLError as e:
+        print(f"Server not up yet: {e}")
+        return False
+
+@pytest.fixture(scope='module')
+def browser_and_server():
+    chrome_options = Options()
+    chrome_options.add_argument("--headless=new")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+
+    db_fd, db_path = tempfile.mkstemp()
+    os.close(db_fd)
+
+    # Create app for DB setup only
+    app = create_app(testing=True)
+    app.config.update({
+        'TESTING': True,
+        'SQLALCHEMY_DATABASE_URI': f'sqlite:///{db_path}',
+        'WTF_CSRF_ENABLED': False,
+    })
+
+    # Setup DB and test user in *main thread's* app
+
     # Start the Flask server in subprocess (it'll init its own fresh app/db)
-    server = Process(target=run_app, args=(f'sqlite:///{db_path}',))
+    print("DB file exists:", os.path.exists(db_path))
+    server = Process(target=run_app, args=(f'{db_path}',))
     server.start()
 
     # Wait for the server to boot up

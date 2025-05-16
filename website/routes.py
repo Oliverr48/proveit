@@ -3,11 +3,59 @@ from .models import Project, Task, User, Activity, Subtask, TaskFile
 from flask_login import login_required, current_user
 from . import db # Import the db object
 from website.models import Project, Task, Subtask  # Add Subtask here
-from datetime import datetime
+from datetime import datetime, date
 from werkzeug.utils import secure_filename
 import os
 
 routes = Blueprint('routes', __name__)
+
+
+
+
+def getForBase():
+    # Get projects owned by the current user or where they are a collaborator
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
+
+     # Get projects owned by the current user or where they are a collaborator
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
+
+    pending_approvals = db.session.query(
+                Task.id.label('task_id'),
+                Task.name.label('task_name'),
+                Project.name.label('project_name'),
+                User.username.label('completed_by')
+            ).join(
+                Project, Project.id == Task.parentProject
+            ).join(
+                User, User.id == Task.user_id
+            ).filter(
+                Project.owner_id == current_user.id,
+                Task.status == 1,
+                Task.approval_status == 0
+            ).all()
+
+    # Fetch invites for the current user
+    invites = db.session.query(
+        Project.name.label('project_name'),
+        User.username.label('inviter_name'),
+        Activity.id.label('invite_id')
+    ).join(Project, Project.id == Activity.projectId
+    ).join(User, User.id == Project.owner_id
+    ).filter(
+        Activity.action == 'Invite sent',
+        Activity.userId == current_user.id
+    ).all()
+    
+   
+
+    return projects, invites, pending_approvals
+
 
 @routes.route('/')
 def index():
@@ -57,6 +105,12 @@ def invite_user():
 @routes.route('/inbox')
 @login_required
 def inbox():
+
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
+
     # Fetch invites for the current user
     invites = db.session.query(
         Project.name.label('project_name'),
@@ -100,17 +154,15 @@ def inbox():
 
     return render_template('inbox.html', 
                           invites=invites, 
-                          pending_approvals=pending_approvals)
+                          pending_approvals=pending_approvals,
+                          projects=projects)
 
 @routes.route('/dashboard')
 @login_required
 def dashboard():
-    # Get projects owned by the current user or where they are a collaborator
-    projects = Project.query.filter(
-        (Project.owner_id == current_user.id) | 
-        (Project.collaborators.any(id=current_user.id))
-    ).all()
-    
+   
+    projects, invites, pending_approvals = getForBase()
+
     # Get completed tasks for the user's projects
     comTasks = Task.query.filter(Task.parentProject.in_(
         [project.id for project in projects]
@@ -135,19 +187,57 @@ def dashboard():
         totalTasks=totalTasks,
         activities=recentActivity,
         upcomingTasks=upcomingTasks, 
-        evidence_files_count=evidence_files_count
+        evidence_files_count=evidence_files_count,
+        invites=invites, 
+        pending_approvals=pending_approvals
     )
 
 @routes.route('/projects')
 @login_required
 def projects():
     # Get projects owned by the current user or where they are a collaborator
-    projects = Project.query.filter(
-        (Project.owner_id == current_user.id) | 
-        (Project.collaborators.any(id=current_user.id))
-    ).all()
     
-    return render_template('project.html', projects=projects, user=current_user)
+    projects, invites, pending_approvals = getForBase()
+    
+    
+    # Get completed tasks for the user's projects
+    comTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    ), Task.status == 1).all()
+    
+    # Get all tasks for the user's projects
+    totalTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    )).all()
+
+    pending_approvals = db.session.query(
+                Task.id.label('task_id'),
+                Task.name.label('task_name'),
+                Project.name.label('project_name'),
+                User.username.label('completed_by')
+            ).join(
+                Project, Project.id == Task.parentProject
+            ).join(
+                User, User.id == Task.user_id
+            ).filter(
+                Project.owner_id == current_user.id,
+                Task.status == 1,
+                Task.approval_status == 0
+            ).all()
+    # Fetch invites for the current user
+    invites = db.session.query(
+        Project.name.label('project_name'),
+        User.username.label('inviter_name'),
+        Activity.id.label('invite_id')
+    ).join(Project, Project.id == Activity.projectId
+    ).join(User, User.id == Project.owner_id
+    ).filter(
+        Activity.action == 'Invite sent',
+        Activity.userId == current_user.id
+    ).all()
+
+    today = date.today().isoformat()
+    return render_template('project.html', projects=projects, comTasks=comTasks, today=today, invites=invites, totalTasks=totalTasks, pending_approvals=pending_approvals)
 
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
@@ -168,8 +258,18 @@ def submitNewProject():
         owner_id=current_user.id  # Set the owner to the current user
     )
 
-    # Add the new project to the database session and commit
     db.session.add(new_project)
+    db.session.flush()  # Flush to get the new project's ID for the activity log
+
+    # Create an activity log for the project creation
+    new_activity = Activity(
+        userId=current_user.id,
+        projectId=new_project.id,
+        action=f"New project created: {name}"
+    )
+
+    # Add the new project to the database session and commit
+    db.session.add(new_activity)
     db.session.commit()
 
     return jsonify({'message': 'Project created successfully'})
@@ -224,13 +324,15 @@ def project_view(project_id):
          (Project.collaborators.any(id=current_user.id)))
     ).first_or_404()
 
+    projects, invites, pending_approvals = getForBase()
+
     tasks = Task.query.filter_by(parentProject=project.id).all()
     
     # Add subtask counts to each task
     for task in tasks:
         task.subtask_count = Subtask.query.filter_by(taskId=task.id).count()
         
-    return render_template('project_view.html', project=project, tasks=tasks)
+    return render_template('project_view.html', project=project, tasks=tasks, projects=projects, invites=invites, pending_approvals=pending_approvals)
 
 # In routes.py - Update the completeTask route
 @routes.route('/completeTask', methods=['POST'])
@@ -285,6 +387,9 @@ def task_detail(task_id):
     """
     Display the detailed view of a specific task with evidence files
     """
+
+    projects, invites, pending_approvals = getForBase()
+
     # Get the task by ID
     task = Task.query.get_or_404(task_id)
     
@@ -529,7 +634,9 @@ def delete_file(file_id):
 @routes.route('/analytics')
 @login_required
 def analytics():
-    return render_template('analytics.html')
+    # Get projects owned by the current user or where they are a collaborator
+    projects, invites, pending_approvals = getForBase()
+    return render_template('analytics.html', projects=projects , invites=invites, pending_approvals=pending_approvals)
 
 @routes.route('/api/time-based-analytics')
 @login_required
@@ -554,103 +661,113 @@ def team_performance_analytics():
     Returns data formatted for visualization.
     """
     projects = Project.query.filter(
-        (Project.owner_id == current_user.id) | 
+        (Project.owner_id == current_user.id) |
         (Project.collaborators.any(id=current_user.id))
     ).all()
 
-    contributor_tasks = {}
+    contributor_data = {}
 
     for project in projects:
-        tasks = Task.query.filter_by(parentProject=project.id).all()
-
+        tasks = Task.query.filter_by(parentProject=project.id, status=1).all()
         for task in tasks:
-            if task.collabs:
-                contributor_usernames = [name.strip() for name in task.collabs.split(',') if name.strip()]
-                for username in contributor_usernames:
-                    if task.status == 1:
-                        contributor_tasks[username] = contributor_tasks.get(username, 0) + 1
+            if not task.collabs:
+                continue
 
-    # Now convert usernames to user info
-    contributor_data = []
-    for username, task_count in contributor_tasks.items():
+            usernames = [u.strip() for u in task.collabs.split(',') if u.strip()]
+            for username in usernames:
+                key = (username, project.name)
+                contributor_data[key] = contributor_data.get(key, 0) + 1
+
+    result = []
+    for (username, project_name), count in contributor_data.items():
         user = User.query.filter_by(username=username).first()
-        if user:
-            contributor_data.append({
-                'username': user.username,
-                'full_name': f'{user.first_name} {user.last_name}' if user.first_name else user.username,
-                'role': user.role if hasattr(user, 'role') else 'Team Member',
-                'task_count': task_count
-            })
+        full_name = f"{user.firstName} {user.lastName}" if user else username
+        role = getattr(user, 'role', 'Team Member') if user else 'Unassigned'
+
+        # Check if contributor already exists in result list
+        existing = next((r for r in result if r['username'] == username), None)
+        if existing:
+            existing['projects'].append({'project_name': project_name, 'task_count': count})
         else:
-            # Handle case where username doesn't exist in DB
-            contributor_data.append({
+            result.append({
                 'username': username,
-                'full_name': username,
-                'role': 'Unassigned',
-                'task_count': task_count
+                'full_name': full_name,
+                'role': role,
+                'projects': [{'project_name': project_name, 'task_count': count}]
             })
 
-    # Sort and take top 10
-    top_contributors = sorted(contributor_data, key=lambda x: x['task_count'], reverse=True)[:10]
-
-    return jsonify(top_contributors)
+    return jsonify(result)
 
 @routes.route('/api/project-performance-analytics')
 @login_required
 def project_performance_analytics():
+    from datetime import datetime, timedelta
     """
     Calculate project completion trends over time.
     This simulates weekly progress data based on current completion percentages.
     In a production environment, this would use historical data points.
     """
-    # Get projects accessible to the current user
     projects = Project.query.filter(
-        (Project.owner_id == current_user.id) | 
+        (Project.owner_id == current_user.id) |
         (Project.collaborators.any(id=current_user.id))
     ).all()
-    
-    # Weekly labels
-    labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8', 'Week 9', 'Week 10', 'Week 11', 'Week 12']
-    # Simulated data points for 12 weeks
-    
-    # Prepare datasets for each project
+
     datasets = []
+    max_weeks = 0
+
     for project in projects:
-        # Calculate current progress percentage
-        current_progress = project.progress
-        
-        # Generate a realistic looking progress trend leading up to the current progress
-        # This creates a curve that starts slower and accelerates toward the current progress
+        # Get project creation time
+        creation_activity = Activity.query.filter_by(
+            projectId=project.id, action=f"New project created: {project.name}"
+        ).order_by(Activity.timestamp.asc()).first()
+
+        completion_activity = Activity.query.filter(
+            Activity.projectId == project.id,
+            Activity.action.in_([
+                "Task completed and approved",
+                "Task marked complete - awaiting approval"
+            ])
+        ).order_by(Activity.timestamp.desc()).first()
+
+        if not creation_activity or not completion_activity:
+            continue
+
+        duration = (completion_activity.timestamp - creation_activity.timestamp).days
+        weeks = max(1, (duration // 7) + 1)  # at least 1 week
+        max_weeks = max(max_weeks, weeks)
+
         trend = []
-        for i in range(len(labels)):
-            # Create an S-curve progression (slower at start, faster in middle, slower at end)
-            week_factor = (i + 1) / len(labels)
-            
-            # Apply a sigmoid-like function to create a natural S-curve
-            if week_factor < 0.3:
-                # Slower progress at the beginning
-                progress_point = current_progress * (week_factor * 1.5)
-            elif week_factor > 0.8:
-                # Slower progress near completion
-                remaining = 1 - week_factor
-                progress_point = current_progress * (1 - (remaining * 0.8))
-            else:
-                # Faster progress in the middle
-                progress_point = current_progress * week_factor * 1.2
-                
-            # Ensure we don't exceed 100% or the current progress
-            progress_point = min(progress_point, current_progress)
-            trend.append(round(progress_point, 1))
-        
-        # Ensure the last point matches the current progress exactly
-        if trend and trend[-1] != current_progress:
-            trend[-1] = current_progress
-        
+        for week in range(weeks):
+            week_start = creation_activity.timestamp + timedelta(weeks=week)
+            week_end = week_start + timedelta(days=6)
+
+            completed_tasks = Task.query.join(Activity).filter(
+                Task.parentProject == project.id,
+                Task.status == 1,
+                Activity.taskId == Task.id,
+                Activity.timestamp >= week_start,
+                Activity.timestamp <= week_end,
+                Activity.action.in_([
+                    "Task completed and approved",
+                    "Task marked complete - awaiting approval"
+                ])
+            ).count()
+
+            total_completed = Task.query.filter_by(parentProject=project.id, status=1).count()
+            percent_complete = (completed_tasks / total_completed) * 100 if total_completed else 0
+            trend.append(round(percent_complete, 1))
+
+        # Make sure the final point hits the current project.progress
+        if trend:
+            trend[-1] = project.progress
+
         datasets.append({
             'label': project.name,
             'data': trend
         })
-    
+
+    labels = [f"Week {i+1}" for i in range(max_weeks)]
+
     return jsonify({
         'labels': labels,
         'datasets': datasets
@@ -763,6 +880,12 @@ def approveTask():
     task_id = request.form.get('task_id')
     task = Task.query.get_or_404(task_id)
     project = Project.query.get_or_404(task.parentProject)
+    
+    # Get projects owned by the current user or where they are a collaborator
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
     
     # Security check - only owner can approve
     if project.owner_id != current_user.id:
