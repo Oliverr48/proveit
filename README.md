@@ -4,7 +4,7 @@ ProveIt is a sophisticated **Flask-based** project‑management platform that en
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 * **Hierarchical Project Organization** – Projects → Tasks → Sub‑tasks
 * **Task Approval Workflow** – Owners can approve / reject submitted evidence
@@ -16,7 +16,7 @@ ProveIt is a sophisticated **Flask-based** project‑management platform that en
 
 ---
 
-## 💻 Technical Architecture
+## Technical Features
 
 | Layer         | Tech / Library         | Notes                               |
 | ------------- | ---------------------- | ----------------------------------- |
@@ -37,8 +37,9 @@ ProveIt is a sophisticated **Flask-based** project‑management platform that en
 * **pip**
 * **Git**
 
-### Installation
+### Installation Walkthrough
 
+ProveIt is easy to set up and use, once cloned into the repository: 
 ```bash
 # 1. Clone the repository
 git clone https://github.com/Oliverr48/proveit
@@ -69,14 +70,15 @@ Visit **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 
 ---
 
-## 📱 Using ProveIt
-
+## Using ProveIt
+Here's a simple rundown of how you can go about ProveIt. It will help you not only to be a good contributing team member, but to help delegate and support one another through your work!
 1. **Sign Up & Log In** – Create an account to access your dashboard.
 2. **Create a Project** – Define deadlines and high‑level goals.
 3. **Add Tasks & Sub‑tasks** – Break work into actionable items.
 4. **Invite Collaborators** – Share the workload with teammates.
 5. **Track Progress** – Upload evidence; owners approve or request changes.
 6. **Analyze Performance** – Head to **Analytics** for visual insights.
+7. **Get your work done!** Watch your tasks tick off as our sleek UI displays your hard work!
 
 ---
 
