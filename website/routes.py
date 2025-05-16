@@ -137,8 +137,18 @@ def submitNewProject():
         owner_id=current_user.id  # Set the owner to the current user
     )
 
-    # Add the new project to the database session and commit
     db.session.add(new_project)
+    db.session.flush()  # Flush to get the new project's ID for the activity log
+
+    # Create an activity log for the project creation
+    new_activity = Activity(
+        userId=current_user.id,
+        projectId=new_project.id,
+        action=f"New project created: {name}"
+    )
+
+    # Add the new project to the database session and commit
+    db.session.add(new_activity)
     db.session.commit()
 
     return jsonify({'message': 'Project created successfully'})
@@ -519,7 +529,7 @@ def team_performance_analytics():
         if user:
             contributor_data.append({
                 'username': user.username,
-                'full_name': f'{user.first_name} {user.last_name}' if user.first_name else user.username,
+                'full_name': f'{user.firstName} {user.lastName}' if user.firstName else user.username,
                 'role': user.role if hasattr(user, 'role') else 'Team Member',
                 'task_count': task_count
             })
