@@ -44,6 +44,7 @@ ProveIt is easy to set up and use, once cloned into the repository:
 # 1. Clone the repository
 git clone https://github.com/Oliverr48/proveit
 cd proveit
+# OR: cd proveit-main if opened from Zipped Code!
 
 # 2. Create & activate a virtual environment
 python -m venv venv
