@@ -54,7 +54,7 @@ source venv/bin/activate
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Initialize the database
+# 4. Initialise the database
 flask db upgrade
 ```
 
@@ -91,12 +91,12 @@ Visit **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 
 ## 👥 Development Team
 
-| Student ID | Name             |
-| ---------- | ---------------- |
-| 23197683   | Oliver King      |
-| 23959437   | Michelle Prayogo |
-| 24128968   | David Pang       |
-| 23724703   | Sam Dockery      |
+| Student ID | Name             | GitHub                                                 |
+| ---------- | ---------------- | ------------------------------------------------------ |
+| 23197683   | Oliver King      | [@Oliverr48](https://github.com/Oliverr48)             |
+| 23959437   | Michelle Prayogo | [@michelleprayogo](https://github.com/michelleprayogo) |
+| 24128968   | David Pang       | [@pohhui247](https://github.com/pohhui247)             |
+| 23724703   | Sam Dockery      | [@samdock04](https://github.com/samdock04)             |
 
 ---
 
