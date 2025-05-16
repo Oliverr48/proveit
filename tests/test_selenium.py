@@ -21,6 +21,9 @@ import urllib.error
 # Skip all selenium tests by default
 #pytestmark = pytest.mark.skip(reason="Skipping Selenium tests due to WebDriver issues")
 
+
+# TEST 1: Make sure the server is up and running with correct DB 
+
 def run_app(db_path):
     #app = create_app()
     db_uri = f'sqlite:///{db_path}'
@@ -67,6 +70,8 @@ def check_if_server_is_up():
         print(f"Server not up yet: {e}")
         return False
 
+
+# For Test #1: Check if the server is up and running with correct DB
 @pytest.fixture(scope='module')
 def browser_and_server():
     chrome_options = Options()
@@ -117,6 +122,7 @@ def browser_and_server():
                 print(f"Driver quit failed: {e}")
 
 
+# Function to check if login is successful and routes to correct page (Test #2)
 def test_login_flow(browser_and_server):
     """Test the login process using Selenium."""
     driver, app = browser_and_server
@@ -137,15 +143,16 @@ def test_login_flow(browser_and_server):
     submit_button.click()
     
 
-    print("Ok, we are here...!! Searching for Dashboard..."),
+    #print("Ok, we are here...!! Searching for Dashboard..."),
     # Wait for page to load and check for Dashboard
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.XPATH, "//h2[contains(text(), 'Dashboard')]"))
     )
-    print("Found dashboard!")
+    #print("Found dashboard!")
     # Assert that we're on the dashboard
     assert 'Dashboard' in driver.page_source
 
+# Test Create Project Flow (Test #3)
 def test_create_project_flow(browser_and_server):
     """Test creating a project using Selenium."""
     driver, app = browser_and_server
@@ -205,6 +212,7 @@ def test_create_project_flow(browser_and_server):
     # Verify project appears in the list
     assert 'Selenium Project' in driver.page_source
 
+# Test Create Task Flow (Test #4)
 def test_create_task(browser_and_server):
     """Test creating a task using Selenium."""
     driver, app = browser_and_server
@@ -289,7 +297,7 @@ def test_create_task(browser_and_server):
     time.sleep(2)  # Better to wait for specific condition if possible
     assert "Selenium Test Task" in driver.page_source  # Very basic check
 
-
+# Test 5 Navigate to task detail view and create subtask    
 def test_create_subtask_flow(browser_and_server):
     """Test creating a task using Selenium."""
     driver, app = browser_and_server
@@ -394,6 +402,7 @@ def test_create_subtask_flow(browser_and_server):
         )
     )
     
+# test 6 selenium invite user flow
 def test_invite_user_flow(browser_and_server):
     
     driver, app = browser_and_server
