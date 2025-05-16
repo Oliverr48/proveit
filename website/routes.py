@@ -767,68 +767,49 @@ def project_performance_analytics():
 @routes.route('/api/analytics/avg-time-to-complete')
 @login_required
 def avg_time_to_complete():
-    """
-    Calculate the average time to complete tasks for each project.
-    Returns data formatted for Chart.js in days instead of weeks.
-    """
-    # Get projects accessible to the current user
+    from datetime import datetime
+
     projects = Project.query.filter(
-        (Project.owner_id == current_user.id) | 
+        (Project.owner_id == current_user.id) |
         (Project.collaborators.any(id=current_user.id))
     ).all()
-    
-    # Dictionary to store time to complete for each project
+
     project_completion_times = {}
-    
-    # For each project, calculate the average completion time
+
     for project in projects:
-        # Get all completed tasks for this project
         tasks = Task.query.filter_by(parentProject=project.id, status=1).all()
-        
         if not tasks:
-            continue  # Skip if no completed tasks
-            
-        # For each task, find its creation and completion activities
+            continue
+
         total_days = 0
         task_count = 0
-        
+
         for task in tasks:
-            # Find task creation activity
-            creation_activity = Activity.query.filter_by(
-                taskId=task.id,
-                action="New task added"
+            creation = Activity.query.filter_by(
+                taskId=task.id, action="New task added"
             ).order_by(Activity.timestamp.asc()).first()
-            
-            # Find task completion activity
-            completion_activity = Activity.query.filter_by(
-                taskId=task.id,
-                action="Task completed!"
+
+            completion = Activity.query.filter(
+                Activity.taskId == task.id,
+                Activity.action.in_([
+                    "Task completed and approved",
+                    "Task marked complete - awaiting approval"
+                ])
             ).order_by(Activity.timestamp.desc()).first()
-            
-            if creation_activity and completion_activity:
-                # Calculate time difference in days
-                time_diff = completion_activity.timestamp - creation_activity.timestamp
-                days_to_complete = time_diff.days
-                
-                # If it took less than a day, count as at least 1 day
-                if days_to_complete < 1:
-                    days_to_complete = 1
-                    
-                total_days += days_to_complete
+
+            if creation and completion:
+                diff = (completion.timestamp - creation.timestamp).days
+                total_days += max(diff, 1)  # minimum of 1 day
                 task_count += 1
-        
+
         if task_count > 0:
-            # Calculate average time in days (rounding to 1 decimal place)
             avg_days = round(total_days / task_count, 1)
             project_completion_times[project.name] = avg_days
-    
-    # Prepare data for Chart.js
+
     labels = list(project_completion_times.keys())
     data = list(project_completion_times.values())
-    
-    # Calculate overall average across all projects
     average = round(sum(data) / len(data), 1) if data else 0
-    
+
     return jsonify({
         'labels': labels,
         'data': data,
