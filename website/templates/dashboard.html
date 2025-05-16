@@ -92,14 +92,21 @@
   <div class="dashboard-card bg-white p-6 rounded-xl shadow-sm">
     <h3 class="font-bold text-slate-800 mb-6">Recent Activity</h3>
     <div class="space-y-4">
-      {% for activity in activities %}
-      <div class="relative pl-6">
-        <span class="activity-dot bg-green-500"></span>
-        <p class="text-sm font-medium text-slate-700">{{activity.action}}</p>
-        <p class="text-xs text-slate-500"> {{activity.project.name}}, {{activity.user.firstName}} </p>
-        <p class="text-xs text-slate-400 mt-1">{{activity.timestamp}}</p>
+    {% for activity in activities %}
+      <div>
+        <!-- Dot + Action on same line -->
+        <div class="flex items-center space-x-2">
+          <span class="w-2 h-2 rounded-full bg-green-500"></span>
+          <p class="text-sm font-medium text-slate-700">{{ activity.action }}</p>
       </div>
-      {% endfor %}
+
+        <!-- Project name + user -->
+        <p class="text-xs text-slate-500">{{ activity.project.name }}, {{ activity.user.firstName }}</p>
+
+        <!-- Timestamp -->
+        <p class="text-xs text-slate-400 mt-1">{{ activity.timestamp }}</p>
+      </div>
+    {% endfor %}
     </div>
   </div>
 </div>
