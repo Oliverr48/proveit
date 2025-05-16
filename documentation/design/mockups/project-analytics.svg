@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="800" fill="#f1f5f9"/>
+  
+  <!-- Page Title and Controls -->
+  <g transform="translate(40, 40)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1e293b">Project Analytics Dashboard</text>
+    <text x="0" y="30" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Compare performance across projects and teams</text>
+    
+    <!-- Project Filter Dropdown -->
+    <g transform="translate(800, 0)">
+      <rect x="0" y="-10" width="320" height="40" rx="6" ry="6" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+      <text x="15" y="15" font-family="Arial, sans-serif" font-size="14" fill="#64748b">Filter by Project</text>
+      
+      <g transform="translate(280, 15)">
+        <path d="M0,0 L10,10 L20,0 Z" fill="#64748b"/>
+      </g>
+      
+      <!-- Time Range Pills -->
+      <g transform="translate(-180, 0)">
+        <rect x="0" y="-10" width="70" height="30" rx="15" ry="15" fill="#6366f1" />
+        <text x="35" y="15" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">30 Days</text>
+        
+        <rect x="80" y="-10" width="70" height="30" rx="15" ry="15" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="115" y="15" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">90 Days</text>
+      </g>
+    </g>
+  </g>
+  
+  <!-- Top Left Section: Average Time Between Task Created and Completion -->
+  <g transform="translate(40, 100)">
+    <!-- Card container -->
+    <rect width="560" height="280" rx="8" ry="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+    
+    <!-- Card header -->
+    <text x="20" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e293b">Average Time to Complete Tasks</text>
+    <text x="20" y="50" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Time between task creation and completion</text>
+    
+    <!-- Chart area -->
+    <g transform="translate(20, 70)">
+      <!-- Y-axis -->
+      <line x1="0" y1="0" x2="0" y2="170" stroke="#cbd5e1" stroke-width="1"/>
+      
+      <!-- X-axis -->
+      <line x1="0" y1="170" x2="520" y2="170" stroke="#cbd5e1" stroke-width="1"/>
+      
+      <!-- Y-axis labels -->
+      <text x="-5" y="0" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">5d</text>
+      <text x="-5" y="42.5" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">4d</text>
+      <text x="-5" y="85" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">3d</text>
+      <text x="-5" y="127.5" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">2d</text>
+      <text x="-5" y="170" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">1d</text>
+      
+      <!-- Horizontal grid lines -->
+      <line x1="0" y1="0" x2="520" y2="0" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="0" y1="42.5" x2="520" y2="42.5" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="0" y1="85" x2="520" y2="85" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="0" y1="127.5" x2="520" y2="127.5" stroke="#f1f5f9" stroke-width="1"/>
+      
+      <!-- Bars for different projects -->
+      <g>
+        <!-- Marketing Website -->
+        <rect x="30" y="60" width="60" height="110" fill="#6366f1" rx="4" ry="4"/>
+        <text x="60" y="185" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Marketing</text>
+        <text x="60" y="55" font-family="Arial, sans-serif" font-size="12" fill="#6366f1" font-weight="bold" text-anchor="middle">3.3d</text>
+        
+        <!-- Mobile App -->
+        <rect x="120" y="30" width="60" height="140" fill="#8b5cf6" rx="4" ry="4"/>
+        <text x="150" y="185" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Mobile App</text>
+        <text x="150" y="25" font-family="Arial, sans-serif" font-size="12" fill="#8b5cf6" font-weight="bold" text-anchor="middle">4.2d</text>
+        
+        <!-- Database Migration -->
+        <rect x="210" y="95" width="60" height="75" fill="#ec4899" rx="4" ry="4"/>
+        <text x="240" y="185" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Database</text>
+        <text x="240" y="90" font-family="Arial, sans-serif" font-size="12" fill="#ec4899" font-weight="bold" text-anchor="middle">2.3d</text>
+        
+        <!-- UI Redesign -->
+        <rect x="300" y="20" width="60" height="150" fill="#f59e0b" rx="4" ry="4"/>
+        <text x="330" y="185" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">UI Redesign</text>
+        <text x="330" y="15" font-family="Arial, sans-serif" font-size="12" fill="#f59e0b" font-weight="bold" text-anchor="middle">4.5d</text>
+        
+        <!-- API Integration -->
+        <rect x="390" y="75" width="60" height="95" fill="#10b981" rx="4" ry="4"/>
+        <text x="420" y="185" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">API</text>
+        <text x="420" y="70" font-family="Arial, sans-serif" font-size="12" fill="#10b981" font-weight="bold" text-anchor="middle">2.8d</text>
+      </g>
+      
+      <!-- Avg line -->
+      <line x1="0" y1="68" x2="520" y2="68" stroke="#ef4444" stroke-width="2" stroke-dasharray="6,4"/>
+      <text x="500" y="63" font-family="Arial, sans-serif" font-size="12" fill="#ef4444" text-anchor="end">Avg: 3.2d</text>
+    </g>
+  </g>
+  
+  <!-- Top Right Section: Top Contributors by Tasks Completed -->
+  <g transform="translate(620, 100)">
+    <!-- Card container -->
+    <rect width="540" height="280" rx="8" ry="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+    
+    <!-- Card header -->
+    <text x="20" y="30" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e293b">Top Contributors</text>
+    <text x="20" y="50" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Most tasks completed by team members</text>
+    
+    <!-- Contributors List -->
+    <g transform="translate(20, 70)">
+      <!-- Contributor 1 -->
+      <g>
+        <circle cx="20" cy="25" r="20" fill="#6366f1"/>
+        <text x="20" y="30" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">JD</text>
+        <text x="50" y="20" font-family="Arial, sans-serif" font-size="14" fill="#1e293b">John Doe</text>
+        <text x="50" y="38" font-family="Arial, sans-serif" font-size="12" fill="#64748b">Front-end Developer</text>
+        
+        <!-- Progress bar -->
+        <rect x="160" y="15" width="320" height="12" rx="6" ry="6" fill="#f1f5f9"/>
+        <rect x="160" y="15" width="290" height="12" rx="6" ry="6" fill="#6366f1"/>
+        <text x="490" y="26" font-family="Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="end">87 tasks</text>
+      </g>
+      
+      <!-- Contributor 2 -->
+      <g transform="translate(0, 60)">
+        <circle cx="20" cy="25" r="20" fill="#8b5cf6"/>
+        <text x="20" y="30" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">AS</text>
+        <text x="50" y="20" font-family="Arial, sans-serif" font-size="14" fill="#1e293b">Anna Smith</text>
+        <text x="50" y="38" font-family="Arial, sans-serif" font-size="12" fill="#64748b">UX Designer</text>
+        
+        <!-- Progress bar -->
+        <rect x="160" y="15" width="320" height="12" rx="6" ry="6" fill="#f1f5f9"/>
+        <rect x="160" y="15" width="260" height="12" rx="6" ry="6" fill="#8b5cf6"/>
+        <text x="490" y="26" font-family="Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="end">74 tasks</text>
+      </g>
+      
+      <!-- Contributor 3 -->
+      <g transform="translate(0, 120)">
+        <circle cx="20" cy="25" r="20" fill="#ec4899"/>
+        <text x="20" y="30" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">MJ</text>
+        <text x="50" y="20" font-family="Arial, sans-serif" font-size="14" fill="#1e293b">Mike Johnson</text>
+        <text x="50" y="38" font-family="Arial, sans-serif" font-size="12" fill="#64748b">Backend Developer</text>
+        
+        <!-- Progress bar -->
+        <rect x="160" y="15" width="320" height="12" rx="6" ry="6" fill="#f1f5f9"/>
+        <rect x="160" y="15" width="230" height="12" rx="6" ry="6" fill="#ec4899"/>
+        <text x="490" y="26" font-family="Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="end">65 tasks</text>
+      </g>
+      
+      <!-- Contributor 4 -->
+      <g transform="translate(0, 180)">
+        <circle cx="20" cy="25" r="20" fill="#f59e0b"/>
+        <text x="20" y="30" font-family="Arial, sans-serif" font-size="12" fill="white" text-anchor="middle">ST</text>
+        <text x="50" y="20" font-family="Arial, sans-serif" font-size="14" fill="#1e293b">Sarah Thomas</text>
+        <text x="50" y="38" font-family="Arial, sans-serif" font-size="12" fill="#64748b">QA Engineer</text>
+        
+        <!-- Progress bar -->
+        <rect x="160" y="15" width="320" height="12" rx="6" ry="6" fill="#f1f5f9"/>
+        <rect x="160" y="15" width="210" height="12" rx="6" ry="6" fill="#f59e0b"/>
+        <text x="490" y="26" font-family="Arial, sans-serif" font-size="13" fill="#1e293b" text-anchor="end">59 tasks</text>
+      </g>
+    </g>
+  </g>
+  
+  <!-- Bottom Section: Project Completion Trends Line Chart -->
+  <g transform="translate(40, 400)">
+    <!-- Card container -->
+    <rect width="1120" height="360" rx="8" ry="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+    
+    <!-- Card header with project filters -->
+    <g transform="translate(20, 30)">
+      <text font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#1e293b">Project Completion Trends</text>
+      <text x="0" y="25" font-family="Arial, sans-serif" font-size="13" fill="#64748b">Compare progress across multiple projects</text>
+      
+      <!-- Legend -->
+      <g transform="translate(550, 10)">
+        <!-- Marketing Website -->
+        <circle cx="10" cy="10" r="6" fill="#6366f1"/>
+        <text x="25" y="14" font-family="Arial, sans-serif" font-size="12" fill="#64748b">Marketing Website</text>
+        
+        <!-- Mobile App -->
+        <g transform="translate(160, 0)">
+          <circle cx="10" cy="10" r="6" fill="#8b5cf6"/>
+          <text x="25" y="14" font-family="Arial, sans-serif" font-size="12" fill="#64748b">Mobile App</text>
+        </g>
+        
+        <!-- Database Migration -->
+        <g transform="translate(280, 0)">
+          <circle cx="10" cy="10" r="6" fill="#ec4899"/>
+          <text x="25" y="14" font-family="Arial, sans-serif" font-size="12" fill="#64748b">Database Migration</text>
+        </g>
+        
+        <!-- UI Redesign -->
+        <g transform="translate(440, 0)">
+          <circle cx="10" cy="10" r="6" fill="#f59e0b"/>
+          <text x="25" y="14" font-family="Arial, sans-serif" font-size="12" fill="#64748b">UI Redesign</text>
+        </g>
+      </g>
+    </g>
+    
+    <!-- Chart area -->
+    <g transform="translate(50, 80)">
+      <!-- Y-axis -->
+      <line x1="0" y1="0" x2="0" y2="250" stroke="#cbd5e1" stroke-width="1"/>
+      
+      <!-- X-axis -->
+      <line x1="0" y1="250" x2="1020" y2="250" stroke="#cbd5e1" stroke-width="1"/>
+      
+      <!-- Y-axis labels -->
+      <text x="-10" y="0" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">100%</text>
+      <text x="-10" y="50" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">80%</text>
+      <text x="-10" y="100" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">60%</text>
+      <text x="-10" y="150" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">40%</text>
+      <text x="-10" y="200" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">20%</text>
+      <text x="-10" y="250" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="end">0%</text>
+      
+      <!-- X-axis labels (weeks) -->
+      <text x="0" y="270" font-family="Arial, sans-serif" font-size="12" fill="#64748b">W1</text>
+      <text x="170" y="270" font-family="Arial, sans-serif" font-size="12" fill="#64748b">W2</text>
+      <text x="340" y="270" font-family="Arial, sans-serif" font-size="12" fill="#64748b">W3</text>
+      <text x="510" y="270" font-family="Arial, sans-serif" font-size="12" fill="#64748b">W4</text>
+      <text x="680" y="270" font-family="Arial, sans-serif" font-size="12" fill="#64748b">W5</text>
+      <text x="850" y="270" font-family="Arial, sans-serif" font-size="12" fill="#64748b">W6</text>
+      <text x="1020" y="270" font-family="Arial, sans-serif" font-size="12" fill="#64748b">W7</text>
+      
+      <!-- Horizontal grid lines -->
+      <line x1="0" y1="0" x2="1020" y2="0" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="0" y1="50" x2="1020" y2="50" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="0" y1="100" x2="1020" y2="100" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="0" y1="150" x2="1020" y2="150" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="0" y1="200" x2="1020" y2="200" stroke="#f1f5f9" stroke-width="1"/>
+      
+      <!-- Vertical grid lines -->
+      <line x1="170" y1="0" x2="170" y2="250" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="340" y1="0" x2="340" y2="250" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="510" y1="0" x2="510" y2="250" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="680" y1="0" x2="680" y2="250" stroke="#f1f5f9" stroke-width="1"/>
+      <line x1="850" y1="0" x2="850" y2="250" stroke="#f1f5f9" stroke-width="1"/>
+      
+      <!-- Line for Marketing Website -->
+      <path d="M0,240 L170,200 L340,150 L510,90 L680,70 L850,50 L1020,20" 
+            fill="none" stroke="#6366f1" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      
+      <!-- Data points for Marketing Website -->
+      <circle cx="0" cy="240" r="5" fill="#6366f1"/>
+      <circle cx="170" cy="200" r="5" fill="#6366f1"/>
+      <circle cx="340" cy="150" r="5" fill="#6366f1"/>
+      <circle cx="510" cy="90" r="5" fill="#6366f1"/>
+      <circle cx="680" cy="70" r="5" fill="#6366f1"/>
+      <circle cx="850" cy="50" r="5" fill="#6366f1"/>
+      <circle cx="1020" cy="20" r="5" fill="#6366f1"/>
+      
+      <!-- Line for Mobile App -->
+      <path d="M0,250 L170,230 L340,180 L510,130 L680,100 L850,85 L1020,70" 
+            fill="none" stroke="#8b5cf6" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      
+      <!-- Data points for Mobile App -->
+      <circle cx="0" cy="250" r="5" fill="#8b5cf6"/>
+      <circle cx="170" cy="230" r="5" fill="#8b5cf6"/>
+      <circle cx="340" cy="180" r="5" fill="#8b5cf6"/>
+      <circle cx="510" cy="130" r="5" fill="#8b5cf6"/>
+      <circle cx="680" cy="100" r="5" fill="#8b5cf6"/>
+      <circle cx="850" cy="85" r="5" fill="#8b5cf6"/>
+      <circle cx="1020" cy="70" r="5" fill="#8b5cf6"/>
+      
+      <!-- Line for Database Migration -->
+      <path d="M0,220 L170,160 L340,120 L510,85 L680,50 L850,20 L1020,10" 
+            fill="none" stroke="#ec4899" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      
+      <!-- Data points for Database Migration -->
+      <circle cx="0" cy="220" r="5" fill="#ec4899"/>
+      <circle cx="170" cy="160" r="5" fill="#ec4899"/>
+      <circle cx="340" cy="120" r="5" fill="#ec4899"/>
+      <circle cx="510" cy="85" r="5" fill="#ec4899"/>
+      <circle cx="680" cy="50" r="5" fill="#ec4899"/>
+      <circle cx="850" cy="20" r="5" fill="#ec4899"/>
+      <circle cx="1020" cy="10" r="5" fill="#ec4899"/>
+      
+      <!-- Line for UI Redesign -->
+      <path d="M170,250 L340,200 L510,180 L680,160 L850,120 L1020,90" 
+            fill="none" stroke="#f59e0b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+      
+      <!-- Data points for UI Redesign -->
+      <circle cx="170" cy="250" r="5" fill="#f59e0b"/>
+      <circle cx="340" cy="200" r="5" fill="#f59e0b"/>
+      <circle cx="510" cy="180" r="5" fill="#f59e0b"/>
+      <circle cx="680" cy="160" r="5" fill="#f59e0b"/>
+      <circle cx="850" cy="120" r="5" fill="#f59e0b"/>
+      <circle cx="1020" cy="90" r="5" fill="#f59e0b"/>
+      
+      <!-- Current Status Pills -->
+      <g transform="translate(850, -50)">
+        <rect width="180" height="30" rx="15" ry="15" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+        <text x="90" y="20" font-family="Arial, sans-serif" font-size="12" fill="#64748b" text-anchor="middle">Hover over data points for details</text>
+      </g>
+    </g>
+  </g>
+</svg>
