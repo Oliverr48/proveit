@@ -9,6 +9,54 @@ import os
 
 routes = Blueprint('routes', __name__)
 
+
+
+
+def getForBase():
+    # Get projects owned by the current user or where they are a collaborator
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
+
+     # Get projects owned by the current user or where they are a collaborator
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
+
+    pending_approvals = db.session.query(
+                Task.id.label('task_id'),
+                Task.name.label('task_name'),
+                Project.name.label('project_name'),
+                User.username.label('completed_by')
+            ).join(
+                Project, Project.id == Task.parentProject
+            ).join(
+                User, User.id == Task.user_id
+            ).filter(
+                Project.owner_id == current_user.id,
+                Task.status == 1,
+                Task.approval_status == 0
+            ).all()
+
+    # Fetch invites for the current user
+    invites = db.session.query(
+        Project.name.label('project_name'),
+        User.username.label('inviter_name'),
+        Activity.id.label('invite_id')
+    ).join(Project, Project.id == Activity.projectId
+    ).join(User, User.id == Project.owner_id
+    ).filter(
+        Activity.action == 'Invite sent',
+        Activity.userId == current_user.id
+    ).all()
+    
+   
+
+    return projects, invites, pending_approvals
+
+
 @routes.route('/')
 def index():
     return render_template('index.html')
@@ -57,6 +105,12 @@ def invite_user():
 @routes.route('/inbox')
 @login_required
 def inbox():
+
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
+
     # Fetch invites for the current user
     invites = db.session.query(
         Project.name.label('project_name'),
@@ -100,17 +154,15 @@ def inbox():
 
     return render_template('inbox.html', 
                           invites=invites, 
-                          pending_approvals=pending_approvals)
+                          pending_approvals=pending_approvals,
+                          projects=projects)
 
 @routes.route('/dashboard')
 @login_required
 def dashboard():
-    # Get projects owned by the current user or where they are a collaborator
-    projects = Project.query.filter(
-        (Project.owner_id == current_user.id) | 
-        (Project.collaborators.any(id=current_user.id))
-    ).all()
-    
+   
+    projects, invites, pending_approvals = getForBase()
+
     # Get completed tasks for the user's projects
     comTasks = Task.query.filter(Task.parentProject.in_(
         [project.id for project in projects]
@@ -135,17 +187,18 @@ def dashboard():
         totalTasks=totalTasks,
         activities=recentActivity,
         upcomingTasks=upcomingTasks, 
-        evidence_files_count=evidence_files_count
+        evidence_files_count=evidence_files_count,
+        invites=invites, 
+        pending_approvals=pending_approvals
     )
 
 @routes.route('/projects')
 @login_required
 def projects():
     # Get projects owned by the current user or where they are a collaborator
-    projects = Project.query.filter(
-        (Project.owner_id == current_user.id) | 
-        (Project.collaborators.any(id=current_user.id))
-    ).all()
+    
+    projects, invites, pending_approvals = getForBase()
+    
     
     # Get completed tasks for the user's projects
     comTasks = Task.query.filter(Task.parentProject.in_(
@@ -157,8 +210,34 @@ def projects():
         [project.id for project in projects]
     )).all()
 
+    pending_approvals = db.session.query(
+                Task.id.label('task_id'),
+                Task.name.label('task_name'),
+                Project.name.label('project_name'),
+                User.username.label('completed_by')
+            ).join(
+                Project, Project.id == Task.parentProject
+            ).join(
+                User, User.id == Task.user_id
+            ).filter(
+                Project.owner_id == current_user.id,
+                Task.status == 1,
+                Task.approval_status == 0
+            ).all()
+    # Fetch invites for the current user
+    invites = db.session.query(
+        Project.name.label('project_name'),
+        User.username.label('inviter_name'),
+        Activity.id.label('invite_id')
+    ).join(Project, Project.id == Activity.projectId
+    ).join(User, User.id == Project.owner_id
+    ).filter(
+        Activity.action == 'Invite sent',
+        Activity.userId == current_user.id
+    ).all()
+
     today = date.today().isoformat()
-    return render_template('project.html', projects=projects, comTasks=comTasks, today=today)
+    return render_template('project.html', projects=projects, comTasks=comTasks, today=today, invites=invites, totalTasks=totalTasks, pending_approvals=pending_approvals)
 
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
@@ -245,13 +324,15 @@ def project_view(project_id):
          (Project.collaborators.any(id=current_user.id)))
     ).first_or_404()
 
+    projects, invites, pending_approvals = getForBase()
+
     tasks = Task.query.filter_by(parentProject=project.id).all()
     
     # Add subtask counts to each task
     for task in tasks:
         task.subtask_count = Subtask.query.filter_by(taskId=task.id).count()
         
-    return render_template('project_view.html', project=project, tasks=tasks)
+    return render_template('project_view.html', project=project, tasks=tasks, projects=projects, invites=invites, pending_approvals=pending_approvals)
 
 # In routes.py - Update the completeTask route
 @routes.route('/completeTask', methods=['POST'])
@@ -306,6 +387,9 @@ def task_detail(task_id):
     """
     Display the detailed view of a specific task with evidence files
     """
+
+    projects, invites, pending_approvals = getForBase()
+
     # Get the task by ID
     task = Task.query.get_or_404(task_id)
     
@@ -550,7 +634,9 @@ def delete_file(file_id):
 @routes.route('/analytics')
 @login_required
 def analytics():
-    return render_template('analytics.html')
+    # Get projects owned by the current user or where they are a collaborator
+    projects, invites, pending_approvals = getForBase()
+    return render_template('analytics.html', projects=projects , invites=invites, pending_approvals=pending_approvals)
 
 @routes.route('/api/time-based-analytics')
 @login_required
@@ -787,6 +873,12 @@ def approveTask():
     task_id = request.form.get('task_id')
     task = Task.query.get_or_404(task_id)
     project = Project.query.get_or_404(task.parentProject)
+    
+    # Get projects owned by the current user or where they are a collaborator
+    projects = Project.query.filter(
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id))
+    ).all()
     
     # Security check - only owner can approve
     if project.owner_id != current_user.id:
