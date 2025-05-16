@@ -147,27 +147,56 @@
 <!-- Tasks Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
   {% for task in tasks %}
-  <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow transition-all duration-200" data-task-id="{{ task.id }}">
+  <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow transition-all duration-200 relative" data-task-id="{{ task.id }}">
     <!-- Task Header -->
     <div class="flex justify-between mb-3">
       <div class="flex space-x-2 items-center">
-        <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
-          {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
+        <span class="status-badge 
+          {% if task.status == 1 %}
+            {% if task.approval_status == 0 and project.approval_required and project.owner_id != current_user.id %}
+              status-pending-approval
+            {% else %}
+              status-completed
+            {% endif %}
+          {% else %}
+            status-in-progress
+          {% endif %}">
+          {% if task.status == 1 %}
+            {% if task.approval_status == 0 and project.approval_required and project.owner_id != current_user.id %}
+              ⏳ Pending Approval
+            {% else %}
+              ✓ Completed
+            {% endif %}
+          {% else %}
+            ● In Progress
+          {% endif %}
         </span>
+        
         {% if task.category %}
         <span class="category-badge">{{ task.category }}</span>
         {% endif %}
         
-        <!-- Add revert button for completed tasks with direct onclick handler -->
+        <!-- Add revert button or cancel request button depending on state -->
         {% if task.status == 1 %}
-        <button type="button" class="revertTaskBtn bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-0.5 rounded-full text-xs flex items-center" 
-          data-task-id="{{ task.id }}" 
-          onclick="revertTask(event, {{ task.id }})">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
-          </svg>
-          Revert
-        </button>
+          {% if task.approval_status == 0 and project.approval_required and task.user_id == current_user.id %}
+          <button type="button" class="revertTaskBtn bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-2 py-0.5 rounded-full text-xs flex items-center" 
+            data-task-id="{{ task.id }}" 
+            onclick="revertTask(event, {{ task.id }})">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            Cancel Request
+          </button>
+          {% else %}
+          <button type="button" class="revertTaskBtn bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-0.5 rounded-full text-xs flex items-center" 
+            data-task-id="{{ task.id }}" 
+            onclick="revertTask(event, {{ task.id }})">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+            </svg>
+            Revert
+          </button>
+          {% endif %}
         {% endif %}
       </div>
       <div class="text-sm text-gray-500">Due: {{ task.dueDate }}</div>
