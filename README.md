@@ -58,6 +58,13 @@ pip install -r requirements.txt
 # 4. Initialise the database
 flask db upgrade
 ```
+### Ensuring your Setup with our Test Suite
+Simply run pytest from the proveit directory, with -s -v flags for optional extra information for any configurations required. 
+
+```bash
+pytest -s -v
+```
+
 
 ### Running the Application
 
