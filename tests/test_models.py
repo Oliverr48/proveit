@@ -3,7 +3,7 @@ import time
 from website.models import User, Project, Task, Subtask
 from website import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+import datetime
 
 def test_new_user(app):
     """Test creating a new user."""
@@ -44,7 +44,7 @@ def test_user_project_relationship(app):
         project1 = Project(
             name='Project 1',
             description='First test project',
-            dueDate='2025-12-31',
+            dueDate=datetime.date(2025, 12, 31),
             tasksActive=0,
             tasksCompleted=0,
             owner_id=user.id
@@ -53,7 +53,7 @@ def test_user_project_relationship(app):
         project2 = Project(
             name='Project 2',
             description='Second test project',
-            dueDate='2025-12-31',
+            dueDate=datetime.date(2025, 12, 31),
             tasksActive=0,
             tasksCompleted=0,
             owner_id=user.id
@@ -81,7 +81,7 @@ def test_project_task_relationship(app, test_project):
         task1 = Task(
             name='Task 1',
             description='First test task',
-            dueDate='2025-12-31',
+            dueDate=datetime.date(2025, 12, 31),
             status=0,  # In progress
             parentProject=project.id,
             collabs='Test User'  # Required field
@@ -90,7 +90,7 @@ def test_project_task_relationship(app, test_project):
         task2 = Task(
             name='Task 2',
             description='Second test task',
-            dueDate='2025-12-31',
+            dueDate=datetime.date(2025, 12, 31),
             status=0,  # In progress
             parentProject=project.id,
             collabs='Test User'  # Required field
@@ -122,7 +122,7 @@ def test_task_subtask_relationship(app, test_project):
         task = Task(
             name='Main Task',
             description='A task with subtasks',
-            dueDate='2025-12-31',
+            dueDate=datetime.date(2025, 12, 31),
             status=0,  # In progress
             parentProject=project.id,
             collabs='Test User'  # Required field
@@ -165,7 +165,7 @@ def test_task_completion(app, test_project):
         task = Task(
             name='Completable Task',
             description='A task to be completed',
-            dueDate='2025-12-31',
+            dueDate=datetime.date(2025, 12, 31),
             status=0,  # In progress
             parentProject=project.id,
             collabs='Test User'  # Required field
