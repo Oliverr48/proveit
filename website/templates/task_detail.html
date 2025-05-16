@@ -4,10 +4,41 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/task-detail.css') }}">
+<style>
+  /* Status indicator for pending approval */
+  .status-pending-approval {
+    background-color: #fffbeb;
+    color: #b45309;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  /* Pending approval notification banner */
+  .pending-approval-banner {
+    background-color: #fffbeb;
+    border-left: 4px solid #b45309;
+    color: #92400e;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 0.25rem;
+  }
+</style>
 {% endblock %}
 
 {% block content %}
-<div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+<div class="bg-white rounded-lg shadow-sm p-6 mb-8 relative">
+  <!-- Approval pending banner (shown only for tasks awaiting approval) -->
+  {% if task.status == 1 and task.approval_status == 0 and project.approval_required and project.owner_id != current_user.id %}
+  <div class="pending-approval-banner flex items-center">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>This task is awaiting approval from the project owner.</span>
+  </div>
+  {% endif %}
+
   <!-- Breadcrumb -->
   <div class="flex items-center mb-6 text-sm text-gray-500">
     <a href="{{ url_for('routes.projects') }}" class="hover:text-indigo-600">Projects</a>
@@ -34,8 +65,25 @@
     </div>
     <div class="flex space-x-3 flex-wrap items-center">
       <!-- Status badge -->
-      <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
-        {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
+      <span class="status-badge 
+        {% if task.status == 1 %}
+          {% if task.approval_status == 0 and project.approval_required and project.owner_id != current_user.id %}
+            status-pending-approval
+          {% else %}
+            status-completed
+          {% endif %}
+        {% else %}
+          status-in-progress
+        {% endif %}">
+        {% if task.status == 1 %}
+          {% if task.approval_status == 0 and project.approval_required and project.owner_id != current_user.id %}
+            ⏳ Pending Approval
+          {% else %}
+            ✓ Completed
+          {% endif %}
+        {% else %}
+          ● In Progress
+        {% endif %}
       </span>
       
       <!-- Category badge -->
@@ -43,15 +91,23 @@
       <span class="category-badge">{{ task.category }}</span>
       {% endif %}
       
-      <!-- Revert button -->
+      <!-- Revert button with different style for pending approval -->
       {% if task.status == 1 %}
-      <button class="revertTaskBtn ml-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-lg text-xs flex items-center" data-task-id="{{ task.id }}">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
-          <path fill-rule="evenodd" d="M10.146 8.146a.5.5 0 01.708 0L14 11.293l3.146-3.147a.5.5 0 01.708.708l-3.5 3.5a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 010-.708z" clip-rule="evenodd"/>
-        </svg>
-        Revert to In-Progress
-      </button>
+        {% if task.approval_status == 0 and project.approval_required and task.user_id == current_user.id %}
+        <button class="revertTaskBtn ml-2 bg-yellow-200 hover:bg-yellow-300 text-yellow-800 px-3 py-1 rounded-lg text-xs flex items-center" data-task-id="{{ task.id }}">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+          </svg>
+          Cancel Approval Request
+        </button>
+        {% else %}
+        <button class="revertTaskBtn ml-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-lg text-xs flex items-center" data-task-id="{{ task.id }}">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+          </svg>
+          Revert to In-Progress
+        </button>
+        {% endif %}
       {% endif %}
       
       <!-- Assignment badge -->
