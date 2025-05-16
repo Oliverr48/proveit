@@ -151,10 +151,22 @@
   <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
     <div>
       <h1 class="text-2xl font-bold text-gray-800">{{ project.name }}</h1>
-      <p class="text-sm text-gray-500">{{ project.assignee or 'Unassigned' }} | Due {{ project.dueDate }}</p>
+      <p class="text-sm text-gray-500">Due {{ project.dueDate }}</p>
     </div>
   </div>
-  
+
+  {% if project.owner_id == current_user.id %}
+  <div class="mt-4 flex items-center">
+    <label class="inline-flex items-center cursor-pointer">
+      <input id="approvalToggle" type="checkbox" class="sr-only peer" 
+             {% if project.approval_required %}checked{% endif %}
+             data-project-id="{{ project.id }}">
+      <div class="relative w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-indigo-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+      <span class="ml-3 text-sm font-medium text-gray-700">Require task approval</span>
+    </label>
+  </div>
+{% endif %}
+
   <!-- Progress Bar -->
   <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
     {% set completion_percentage = (project.tasksCompleted / (project.tasksActive + project.tasksCompleted) * 100) if (project.tasksActive + project.tasksCompleted) > 0 else 100 %}
@@ -269,17 +281,31 @@
   </div>
 </div>
 
-<!-- Tasks Grid (Fixed the structure) -->
+<!-- Tasks Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
   {% for task in tasks %}
   <div class="bg-white p-6 rounded-lg shadow-sm hover:shadow transition-all duration-200" data-task-id="{{ task.id }}">
     <!-- Task Header -->
     <div class="flex justify-between mb-3">
-      <div class="flex space-x-2">
+      <div class="flex space-x-2 items-center">
         <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
           {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
         </span>
-        <span class="category-badge">{{ task.category or 'Frontend' }}</span>
+        {% if task.category %}
+        <span class="category-badge">{{ task.category }}</span>
+        {% endif %}
+        
+        <!-- Add revert button for completed tasks with direct onclick handler -->
+        {% if task.status == 1 %}
+        <button type="button" class="revertTaskBtn bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-0.5 rounded-full text-xs flex items-center" 
+          data-task-id="{{ task.id }}" 
+          onclick="revertTask(event, {{ task.id }})">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+          </svg>
+          Revert
+        </button>
+        {% endif %}
       </div>
       <div class="text-sm text-gray-500">Due: {{ task.dueDate }}</div>
     </div>
@@ -344,12 +370,13 @@
   <div class="mb-6">
     <h2 class="text-2xl font-bold text-gray-800 mb-3">{{ selected_task.name }}</h2>
     <div class="flex space-x-3">
-      <span class="status-badge {{ 'status-completed' if selected_task.status == 1 else 'status-in-progress' }}">
-        {% if selected_task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
+      <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
+        {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
       </span>
-      <span class="category-badge">{{ selected_task.category or 'Frontend' }}</span>
+      {% if task.category %}
+      <span class="category-badge">{{ task.category }}</span>
+      {% endif %}
     </div>
-  </div>
   
   <!-- Assignee info in top right -->
   <div class="absolute top-6 right-6 flex items-center">
@@ -697,6 +724,38 @@ function initializeFileUpload() {
       });
     });
   });
+}
+
+fix/task-approval-workflow
+// Direct revert task function that can be called from inline onclick
+function revertTask(event, taskId) {
+  // Stop the event from bubbling up to parent elements
+  event.preventDefault();
+  event.stopPropagation();
+  
+  if (confirm('Are you sure you want to revert this task to in-progress status?')) {
+    fetch('/revertTask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({'task_id': taskId})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        // Show a quick success message
+        alert('Task reverted successfully!');
+        location.reload();
+      } else {
+        alert('Error reverting task: ' + (data.message || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      alert('Connection error. Please try again.');
+    });
+  }
+  
+  // Return false to prevent any navigation
+  return false;
 }
 
 // Set min and max date for taskDueDate input

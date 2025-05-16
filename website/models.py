@@ -18,6 +18,8 @@ class Project(db.Model):
     tasksActive = db.Column(db.Integer, nullable=False)
     tasksCompleted = db.Column(db.Integer, nullable=False)
     owner_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)  # Link project to a user
+    # Whether task completion requires owner approval
+    approval_required = db.Column(db.Boolean, default=True)
 
     owner = db.relationship('User', backref='projects')  # Relationship to access the owner of the project
     collaborators = db.relationship('User', secondary=project_collaborators, backref='collaborated_projects')
@@ -29,26 +31,54 @@ class Project(db.Model):
         else:
             print (self.tasksCompleted / (self.tasksActive + self.tasksCompleted) * 100)
             return round((self.tasksCompleted / (self.tasksActive + self.tasksCompleted)*100),2)
+            
+    @property
+    def pending_approval_count(self):
+        """Count tasks pending approval"""
+        from sqlalchemy import and_
+        return Task.query.filter(
+            and_(
+                Task.parentProject == self.id,
+                Task.status == 1,
+                Task.approval_status == 0
+            )
+        ).count()
 
     def __str__(self):
         return f"Project: {self.name}, Description: {self.description}, Start Date: {self.dueDate}"
 
-class Task(db.Model):
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    parentProject = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    # The below will maybe have to be a drop down; a list of users??
-    collabs = db.Column(db.String(200), nullable=False)
-    dueDate = db.Column(db.String(20), nullable=False)
-    # 0 represents in progress, 1 represents completed
-    status = db.Column(db.Integer, nullable=False)
-    category = db.Column(db.String(100), nullable=True)
 
-    subtasks = db.relationship('Subtask', backref='task', lazy=True)  # Ensure 'Subtask' matches the class name
-    project = db.relationship('Project', backref='tasks')
-    # Add relationship to TaskFile
-    files = db.relationship('TaskFile', backref='task', lazy=True, cascade="all, delete-orphan")
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), nullable=False)
+    description = db.Column(db.String(250), nullable=True)
+    collabs = db.Column(db.String(150), nullable=False)
+    dueDate = db.Column(db.DateTime, nullable=False)
+    # Make this a proper foreign key
+    parentProject = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=False)
+    status = db.Column(db.Integer, nullable=False, default=0)  # 0=in progress, 1=completed
+    approval_status = db.Column(db.Integer, nullable=False, default=0)  # 0=pending, 1=approved, 2=rejected
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=True)  # User who completed the task
+    
+    # Define relationships
+    project = db.relationship('Project', backref='tasks', foreign_keys=[parentProject])
+    user = db.relationship('User', backref='completed_tasks', foreign_keys=[user_id])
+
+    @property
+    def needs_approval(self):
+        """Check if task needs approval based on status and who completed it"""
+        if not self.project.approval_required:
+            return False
+        if self.status != 1:  # Only completed tasks can need approval
+            return False
+        if self.approval_status != 0:  # Must be in pending state
+            return False
+        if self.user_id == self.project.owner_id:  # Owner's tasks auto-approve
+            return False
+        return True
+        
+    def __repr__(self):
+        return f'<Task {self.id}: {self.name}>'
 
 class Subtask(db.Model):
     id = db.Column(db.Integer, primary_key=True)

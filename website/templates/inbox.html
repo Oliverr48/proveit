@@ -1,43 +1,255 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inbox - Project Invites</title>
-</head>
-<body>
-    {% extends "base.html" %}
+{% extends "base.html" %}
 
-    {% block title %}Inbox - Project Invites{% endblock %}
+{% block title %}Inbox – Notifications{% endblock %}
 
-    {% block content %}
-    <div class="container mx-auto p-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-4">Project Invites</h1>
-        <div class="invites-list">
-            {% if invites %}
-                {% for invite in invites %}
-                <div class="invite-item bg-white p-4 rounded-lg shadow-sm mb-4">
-                    <p><strong>Project:</strong> {{ invite.project_name }}</p>
-                    <p><strong>Invited By:</strong> {{ invite.inviter_name }}</p>
-                    <div class="actions mt-2">
-                        <form method="POST" action="{{ url_for('routes.accept_invite', invite_id=invite.invite_id) }}" style="display: inline;">
-                            <button type="submit" class="btn-accept bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm">
-                                Accept
-                            </button>
-                        </form>
-                        <form method="POST" action="{{ url_for('routes.reject_invite', invite_id=invite.invite_id) }}" style="display: inline;">
-                            <button type="submit" class="btn-reject bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm">
-                                Reject
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-gray-600">No invites found.</p>
-            {% endif %}
-        </div>
+{% block extra_css %}
+<style>
+  .notification-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
+    background-color: #ef4444;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .approval-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    background-color: #fff7ed;
+    color: #c2410c;
+  }
+  
+  .notification-item {
+    transition: all 0.3s ease;
+  }
+  
+  .notification-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .notification-tabs {
+    display: flex;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 1.5rem;
+  }
+  
+  .notification-tab {
+    padding: 0.75rem 1rem;
+    font-weight: 500;
+    color: #6b7280;
+    cursor: pointer;
+  }
+  
+  .notification-tab.active {
+    color: #4f46e5;
+    border-bottom: 2px solid #4f46e5;
+  }
+  
+  .tab-content {
+    display: none;
+  }
+  
+  .tab-content.active {
+    display: block;
+  }
+  
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1rem;
+    text-align: center;
+    color: #6b7280;
+  }
+  
+  .empty-state-icon {
+    width: 4rem;
+    height: 4rem;
+    color: #d1d5db;
+    margin-bottom: 1.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Inbox</h1>
+    
+    {% set total_notifications = (invites|length) + (pending_approvals|length) %}
+    {% if total_notifications > 0 %}
+    <div class="notification-badge">{{ total_notifications }}</div>
+    {% endif %}
+  </div>
+
+  <div class="notification-tabs">
+    <div class="notification-tab active" data-tab="invites">
+      Project Invites {% if invites %}<span class="ml-2 bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full text-xs">{{ invites|length }}</span>{% endif %}
     </div>
-    {% endblock %}
-</body>
-</html>
+    <div class="notification-tab" data-tab="approvals">
+      Pending Approvals {% if pending_approvals %}<span class="ml-2 bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-xs">{{ pending_approvals|length }}</span>{% endif %}
+    </div>
+  </div>
+
+  <!-- Project Invites Tab -->
+  <div id="invites-tab" class="tab-content active">
+    {% if invites %}
+      <div class="space-y-4">
+        {% for invite in invites %}
+          <div class="notification-item bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Invitation to Collaborate</h3>
+                    <p class="text-gray-600 mt-1">You've been invited to collaborate on project <span class="font-medium">{{ invite.project_name }}</span> by <span class="font-medium">{{ invite.inviter_name }}</span></p>
+                  </div>
+                </div>
+              </div>
+              <div class="text-sm text-gray-500">
+                <!-- Could add timestamp here if available -->
+              </div>
+            </div>
+            
+            <div class="mt-4 flex gap-3">
+              <form method="POST" action="{{ url_for('routes.accept_invite', invite_id=invite.invite_id) }}">
+                {% if csrf_token %}{{ csrf_token() }}{% endif %}
+                <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition-colors duration-200">
+                  Accept
+                </button>
+              </form>
+              
+              <form method="POST" action="{{ url_for('routes.reject_invite', invite_id=invite.invite_id) }}">
+                {% if csrf_token %}{{ csrf_token() }}{% endif %}
+                <button class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg text-sm transition-colors duration-200">
+                  Decline
+                </button>
+              </form>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <h3 class="text-lg font-medium">No Invitations</h3>
+        <p class="mt-1 text-sm">You don't have any pending project invitations</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Pending Approvals Tab -->
+  <div id="approvals-tab" class="tab-content">
+    {% if pending_approvals %}
+      <div class="space-y-4">
+        {% for approval in pending_approvals %}
+          <div class="notification-item bg-white p-5 rounded-lg shadow-sm border border-gray-100" data-task-id="{{ approval.task_id }}">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center">
+                  <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 mr-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="flex items-center">
+                      <h3 class="text-lg font-semibold text-gray-800">{{ approval.task_name }}</h3>
+                      <span class="approval-badge ml-2">Awaiting Approval</span>
+                    </div>
+                    <p class="text-gray-600 mt-1">
+                      <span class="font-medium">{{ approval.completed_by }}</span> has completed this task in project <span class="font-medium">{{ approval.project_name }}</span> and is waiting for your approval.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div class="text-sm text-gray-500">
+                <!-- Could add timestamp here if available -->
+              </div>
+            </div>
+            
+        <div class="mt-4 flex gap-3">
+            <!-- Approve Task button -->
+            <form method="POST" action="{{ url_for('routes.approveTask') }}">
+                {% if csrf_token %}{{ csrf_token() }}{% endif %}
+                <input type="hidden" name="task_id" value="{{ approval.task_id }}">
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    Approve
+                </button>
+            </form>
+            
+            <!-- Reject Task button -->
+            <form method="POST" action="{{ url_for('routes.rejectTask') }}">
+                {% if csrf_token %}{{ csrf_token() }}{% endif %}
+                <input type="hidden" name="task_id" value="{{ approval.task_id }}">
+                <button type="submit" class="bg-white hover:bg-gray-50 text-gray-700 border border-gray-300 px-4 py-2 rounded-lg text-sm transition-colors duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Return to In-Progress
+                </button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty-state">
+        <svg class="empty-state-icon" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <h3 class="text-lg font-medium">No Pending Approvals</h3>
+        <p class="mt-1 text-sm">There are no tasks waiting for your approval</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Tab switching
+  const tabs = document.querySelectorAll('.notification-tab');
+  const tabContents = document.querySelectorAll('.tab-content');
+  
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      // Remove active class from all tabs
+      tabs.forEach(t => t.classList.remove('active'));
+      
+      // Add active class to clicked tab
+      this.classList.add('active');
+      
+      // Hide all tab contents
+      tabContents.forEach(content => content.classList.remove('active'));
+      
+      // Show the corresponding tab content
+      const tabId = this.dataset.tab + '-tab';
+      document.getElementById(tabId).classList.add('active');
+    });
+  });
+});
+</script>
+{% endblock %}
