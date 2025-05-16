@@ -3,7 +3,7 @@ from .models import Project, Task, User, Activity, Subtask, TaskFile
 from flask_login import login_required, current_user
 from . import db # Import the db object
 from website.models import Project, Task, Subtask  # Add Subtask here
-from datetime import datetime
+from datetime import datetime, date
 from werkzeug.utils import secure_filename
 import os
 
@@ -116,7 +116,18 @@ def projects():
         (Project.collaborators.any(id=current_user.id))
     ).all()
     
-    return render_template('project.html', projects=projects, user=current_user)
+    # Get completed tasks for the user's projects
+    comTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    ), Task.status == 1).all()
+    
+    # Get all tasks for the user's projects
+    totalTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    )).all()
+
+    today = date.today().isoformat()
+    return render_template('project.html', projects=projects, comTasks=comTasks, today=today)
 
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
