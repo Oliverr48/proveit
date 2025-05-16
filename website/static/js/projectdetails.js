@@ -215,4 +215,46 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+  
+  document.querySelectorAll('.delete-subtask-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (confirm('Are you sure you want to delete this subtask and all its files?')) {
+        const subtaskId = this.dataset.subtaskId;
+        fetch(`/delete_subtask/${subtaskId}`, {
+          method: 'POST',
+          headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            window.location.reload();
+          } else {
+            alert(data.message || 'Error deleting subtask');
+          }
+        });
+      }
+    });
+  });
+  
+  document.querySelectorAll('.delete-task-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      if (confirm('Are you sure you want to delete this task, all its subtasks, and all associated files?')) {
+        const taskId = this.dataset.taskId;
+        fetch(`/delete_task/${taskId}`, {
+          method: 'POST',
+          headers: {'X-Requested-With': 'XMLHttpRequest'}
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') {
+            window.location.reload();
+          } else {
+            alert(data.message || 'Error deleting task');
+          }
+        });
+      }
+    });
+  });
 });
