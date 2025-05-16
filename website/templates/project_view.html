@@ -282,17 +282,28 @@
     
     <!-- Assignee -->
     <div class="flex items-center mb-4">
-      <div class="avatar {{ 'avatar-jd' if 'John' in task.collabs else 'avatar-bj' }}">
-        {{ task.collabs[0:2] if task.collabs else 'JD' }}
-      </div>
-      <span class="ml-2 text-sm text-gray-600">{{ task.collabs }}</span>
+      {% if task.collabs and task.collabs != "Unassigned" %}
+        <!-- Simple alternating colors based on first character's position in the name -->
+        {% set avatar_colors = ['bg-indigo-600', 'bg-blue-600', 'bg-cyan-600', 'bg-emerald-600', 'bg-violet-600', 'bg-pink-600'] %}
+        {% set color_index = (task.collabs|length + task.id) % 6 %}
+        <div class="avatar {{ avatar_colors[color_index] }}">
+          {{ task.collabs[0:2] if task.collabs else "UN" }}
+        </div>
+        <span class="ml-2 text-sm text-gray-600 truncate max-w-[150px]">{{ task.collabs }}</span>
+      {% else %}
+        <div class="avatar bg-gray-400">
+          <span>UN</span>
+        </div>
+        <span class="ml-2 text-sm text-gray-600">Unassigned</span>
+      {% endif %}
     </div>
     
     <!-- Subtasks Summary -->
     <div class="mb-3">
-      <div class="text-sm text-gray-500">Subtasks ({% if task.subtask_list %}{{ task.subtask_list|length }}{% else %}0{% endif %})</div>
-      {% if task.subtask_list %}
-        {% for subtask in task.subtask_list[:3] %}
+      <div class="text-sm text-gray-500">Subtasks ({{ task.subtask_count }})</div>
+      {% set task_subtasks = subtasks|selectattr('taskId', 'equalto', task.id)|list if subtasks else [] %}
+      {% if task_subtasks %}
+        {% for subtask in task_subtasks[:3] %}
         <div class="flex items-center mt-2">
           <div class="subtask-icon {{ 'subtask-complete' if subtask.status == 1 else 'subtask-incomplete' }}">
             {% if subtask.status == 1 %}✓{% else %}-{% endif %}
