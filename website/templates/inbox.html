@@ -3,84 +3,7 @@
 {% block title %}Inbox – Notifications{% endblock %}
 
 {% block extra_css %}
-<style>
-  .notification-badge {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    border-radius: 9999px;
-    background-color: #ef4444;
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-  
-  .approval-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    background-color: #fff7ed;
-    color: #c2410c;
-  }
-  
-  .notification-item {
-    transition: all 0.3s ease;
-  }
-  
-  .notification-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-  
-  .notification-tabs {
-    display: flex;
-    border-bottom: 1px solid #e5e7eb;
-    margin-bottom: 1.5rem;
-  }
-  
-  .notification-tab {
-    padding: 0.75rem 1rem;
-    font-weight: 500;
-    color: #6b7280;
-    cursor: pointer;
-  }
-  
-  .notification-tab.active {
-    color: #4f46e5;
-    border-bottom: 2px solid #4f46e5;
-  }
-  
-  .tab-content {
-    display: none;
-  }
-  
-  .tab-content.active {
-    display: block;
-  }
-  
-  .empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 3rem 1rem;
-    text-align: center;
-    color: #6b7280;
-  }
-  
-  .empty-state-icon {
-    width: 4rem;
-    height: 4rem;
-    color: #d1d5db;
-    margin-bottom: 1.5rem;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/inbox.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -228,28 +151,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Tab switching
-  const tabs = document.querySelectorAll('.notification-tab');
-  const tabContents = document.querySelectorAll('.tab-content');
-  
-  tabs.forEach(tab => {
-    tab.addEventListener('click', function() {
-      // Remove active class from all tabs
-      tabs.forEach(t => t.classList.remove('active'));
-      
-      // Add active class to clicked tab
-      this.classList.add('active');
-      
-      // Hide all tab contents
-      tabContents.forEach(content => content.classList.remove('active'));
-      
-      // Show the corresponding tab content
-      const tabId = this.dataset.tab + '-tab';
-      document.getElementById(tabId).classList.add('active');
-    });
-  });
-});
-</script>
+<script src="{{ url_for('static', filename='js/inbox.js') }}"></script>
 {% endblock %}

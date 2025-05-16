@@ -1,56 +1,218 @@
-// JS for handling events within each project - e.g adding tasks 
+// Global variable for the task modal
+let taskModal;
+let inviteModal;
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Apply project card hover effects
- 
-  
-  // Initialize the "New Project" button
-  initializeAddTaskButton();
-
-  //Initialize the project detail view button
-  initializeTaskCompleteButton();
-
-});
-
-
+// Initialize the Add Task button and modal
 function initializeAddTaskButton() {
   const addTaskBtn = document.getElementById('newTaskBtn');
-  var modal = document.getElementById('modalAddTask');
+  taskModal = document.getElementById('modalAddTask');
+  const closeModalBtn = document.getElementById('closeModalBtn');
   
-  if (addTaskBtn) {
-    addTaskBtn.addEventListener('click', function () {
+  if (addTaskBtn && taskModal) {
+    addTaskBtn.addEventListener('click', function() {
+      taskModal.classList.remove('hidden');
+      taskModal.style.display = 'flex';
+    });
+    
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener('click', function() {
+        taskModal.classList.add('hidden');
+        taskModal.style.display = 'none';
+      });
+    }
+  }
+}
 
-      modal.classList.remove('hidden');
-      modal.style.display = 'flex';
+// Initialize the Invite modal
+function initializeInviteModal() {
+  const inviteBtn = document.getElementById('openInviteModalBtn');
+  inviteModal = document.getElementById('inviteModal');
+  const closeInviteModalBtn = document.getElementById('closeInviteModalBtn');
+  
+  if (inviteBtn && inviteModal) {
+    inviteBtn.addEventListener('click', function() {
+      inviteModal.classList.remove('hidden');
+      inviteModal.style.display = 'flex';
+    });
+    
+    if (closeInviteModalBtn) {
+      closeInviteModalBtn.addEventListener('click', function() {
+        inviteModal.classList.add('hidden');
+        inviteModal.style.display = 'none';
+      });
+    }
+  }
+}
 
-      // Close button listener
-      modal.querySelector('#closeModalBtn').addEventListener('click', function () {
-
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
+// Initialize the Complete Task button
+function initializeTaskCompleteButton() {
+  const completeTaskBtn = document.getElementById('complTaskBtn');
+  
+  if (completeTaskBtn) {
+    completeTaskBtn.addEventListener('click', function() {
+      $.ajax({
+        url: '/completeTask',
+        type: 'POST',
+        data: {task_id: this.dataset.taskId},
+        success: function(response) {
+          location.reload(); // Refresh to show the updated task status
+        },
+        error: function(error) {
+          alert('Error completing task: ' + error.responseText);
+        }
       });
     });
   }
 }
 
-function initializeTaskCompleteButton() {
-  const completeTaskBtn = document.getElementById('complTaskBtn'); 
+// Initialize the Evidence Modal
+function initializeEvidenceModal() {
+  const viewFilesButtons = document.querySelectorAll('.view-files-btn');
+  const evidenceModal = document.getElementById('evidence-modal');
+  const closeEvidenceModal = document.getElementById('close-evidence-modal');
   
-  if (completeTaskBtn) {
-    completeTaskBtn.addEventListener('click', function () {
+  viewFilesButtons.forEach(button => {
+    button.addEventListener('click', function(e) {
+      e.preventDefault();
+      const subtaskId = this.dataset.subtaskId;
+      const subtaskName = this.closest('div').querySelector('span').textContent.trim();
       
-      $.ajax({
-        url: '/completeTask',
-        type: 'POST',
-        data: {task_id: this.dataset.taskId },
-        success: function (response) {
-          //alert('Project completed successfully!');
-          location.reload(); // Refresh to show the updated project status
-        },
-        error: function (error) {
-          alert('Error completing project: ' + error.responseText);
-        }
-      })
+      // Update modal title
+      if (document.getElementById('evidence-modal-title')) {
+        document.getElementById('evidence-modal-title').textContent = `Task: ${document.title} > ${subtaskName}`;
+      }
+      
+      // Show modal
+      if (evidenceModal) {
+        evidenceModal.classList.remove('hidden');
+      }
+    });
+  });
+  
+  if (closeEvidenceModal && evidenceModal) {
+    closeEvidenceModal.addEventListener('click', function() {
+      evidenceModal.classList.add('hidden');
     });
   }
 }
+
+// Initialize File Upload functionality
+function initializeFileUpload() {
+  const dropZones = document.querySelectorAll('.drop-zone');
+  
+  dropZones.forEach(zone => {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+      zone.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+      zone.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+      zone.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+      zone.classList.add('border-indigo-500', 'bg-indigo-50');
+    }
+    
+    function unhighlight() {
+      zone.classList.remove('border-indigo-500', 'bg-indigo-50');
+    }
+    
+    zone.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+      const files = e.dataTransfer.files;
+      // Handle file upload
+      console.log('Files dropped:', files);
+      
+      if (files.length > 0) {
+        alert(`${files.length} file(s) selected for upload`);
+      }
+    }
+    
+    zone.addEventListener('click', function() {
+      const fileInput = document.createElement('input');
+      fileInput.type = 'file';
+      fileInput.multiple = true;
+      fileInput.click();
+      
+      fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+          console.log('Files selected:', this.files);
+          alert(`${this.files.length} file(s) selected for upload`);
+        }
+      });
+    });
+  });
+}
+
+// Direct revert task function that can be called from inline onclick
+function revertTask(event, taskId) {
+  // Stop the event from bubbling up to parent elements
+  event.preventDefault();
+  event.stopPropagation();
+  
+  if (confirm('Are you sure you want to revert this task to in-progress status?')) {
+    fetch('/revertTask', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({'task_id': taskId})
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.status === 'success') {
+        // Show a quick success message
+        alert('Task reverted successfully!');
+        location.reload();
+      } else {
+        alert('Error reverting task: ' + (data.message || 'Unknown error'));
+      }
+    })
+    .catch(error => {
+      alert('Connection error. Please try again.');
+    });
+  }
+  
+  // Return false to prevent any navigation
+  return false;
+}
+
+// DOM Content Loaded - Initialize everything
+document.addEventListener('DOMContentLoaded', function() {
+  // Apply all event listeners after DOM has loaded
+  initializeAddTaskButton();
+  initializeTaskCompleteButton();
+  initializeEvidenceModal();
+  initializeFileUpload();
+  initializeInviteModal(); // Added function to handle invite modal
+
+  // Handle form submission
+  $('#addTaskForm').on('submit', function(e) {
+    e.preventDefault();
+    console.log('Form submitted!');
+    
+    $.ajax({
+      url: '/submitAddTask',
+      type: 'POST',
+      data: $(this).serialize(),
+      success: function(response) {
+        if (taskModal) {
+          taskModal.classList.add('hidden');
+          taskModal.style.display = 'none';
+        }
+        location.reload(); // Refresh to show the new project
+      },
+      error: function(error) {
+        alert('Error adding task: ' + error.responseText);
+      }
+    });
+  });
+});

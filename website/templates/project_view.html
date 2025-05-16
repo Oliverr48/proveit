@@ -3,145 +3,7 @@
 {% block title %}Task Management - ProveIt{% endblock %}
 
 {% block extra_css %}
-<style>
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-  }
-  
-  .status-in-progress {
-    background-color: #fff8e6;
-    color: #b45309;
-  }
-  
-  .status-completed {
-    background-color: #ecfdf5;
-    color: #047857;
-  }
-  
-  .category-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    background-color: #e0e7ff;
-    color: #4338ca;
-  }
-  
-  .avatar {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 9999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 500;
-  }
-  
-  .avatar-jd {
-    background-color: #4f46e5;
-  }
-  
-  .avatar-bj {
-    background-color: #3b82f6;
-  }
-  
-  .subtask-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 9999px;
-    margin-right: 0.5rem;
-  }
-  
-  .subtask-complete {
-    background-color: #d1fae5;
-    color: #059669;
-  }
-  
-  .subtask-incomplete {
-    background-color: #f3f4f6;
-    color: #9ca3af;
-  }
-  
-  .evidence-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 50;
-  }
-  
-  .evidence-modal-content {
-    background-color: white;
-    border-radius: 0.5rem;
-    max-width: 36rem;
-    width: 100%;
-    max-height: 90vh;
-    overflow-y: auto;
-    padding: 1.5rem;
-  }
-  
-  .file-item {
-    display: flex;
-    align-items: center;
-    padding: 1rem;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    margin-bottom: 0.75rem;
-  }
-  
-  .file-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 3rem;
-    height: 3rem;
-    background-color: #f9fafb;
-    border-radius: 0.5rem;
-    margin-right: 1rem;
-    font-weight: 500;
-  }
-  
-  .drop-zone {
-    border: 2px dashed #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 2rem;
-    text-align: center;
-    margin-bottom: 1rem;
-    cursor: pointer;
-  }
-  
-  .drop-zone:hover {
-    border-color: #6366f1;
-    background-color: #f5f7ff;
-  }
-
-  .modal-close-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    color: #9ca3af;
-  }
-  
-  .modal-close-btn:hover {
-    color: #6b7280;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/task-management.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -226,9 +88,9 @@
   </div>
 </div>
 
-<!-- Invite Users Modal - FIXED: Close button positioned correctly -->
+<!-- Invite Users Modal -->
 <div id="inviteModal" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96 relative"> <!-- Added relative positioning -->
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96 relative">
     <h3 class="text-lg font-bold text-slate-800 mb-4">Invite Users</h3>
     <form id="inviteUserForm">
       <div class="mb-4">
@@ -238,7 +100,7 @@
       <input type="hidden" id="project_id" name="project_id" value="{{ project.id }}">
       <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Send Invite</button>
     </form>
-    <button id="closeInviteModalBtn" class="modal-close-btn"> <!-- Updated class -->
+    <button id="closeInviteModalBtn" class="modal-close-btn">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
       </svg>
@@ -246,9 +108,9 @@
   </div>
 </div>
     
-<!-- Add Task Modal - FIXED: Close button positioned correctly -->
+<!-- Add Task Modal -->
 <div id="modalAddTask" class="modal hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
-  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96 relative"> <!-- Added relative positioning -->
+  <div class="modal-content bg-white rounded-lg shadow-lg p-6 w-96 relative">
     <h3 class="text-lg font-bold text-slate-800 mb-4">New Task</h3>
     <form id="addTaskForm">
       <div class="mb-4">
@@ -267,14 +129,14 @@
           max="{{ project.dueDate }}"
         >
       </div>
-    <div class="mb-4">
-      <label for="taskDescription" class="block text-sm font-medium text-slate-700">Description</label>
-      <textarea id="taskDescription" name="taskDescription" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-    </div>
+      <div class="mb-4">
+        <label for="taskDescription" class="block text-sm font-medium text-slate-700">Description</label>
+        <textarea id="taskDescription" name="taskDescription" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+      </div>
       <input type="hidden" name="project_id" value="{{ project.id }}" id="project_id">
       <button type="submit" class="btn-primary px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">Add Task </button>
     </form>
-    <button id="closeModalBtn" class="modal-close-btn"> <!-- Updated class -->
+    <button id="closeModalBtn" class="modal-close-btn">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
       </svg>
@@ -357,104 +219,19 @@
 
 <!-- Task Detail View (visible when viewing a single task) -->
 {% if selected_task %}
-<div class="bg-white rounded-lg shadow-sm p-6 mb-8">
-  <!-- Breadcrumb -->
-  <div class="flex items-center mb-6 text-sm text-gray-500">
-    <a href="{{ url_for('routes.projects') }}" class="hover:text-indigo-600">Projects</a>
-    <span class="mx-2">›</span>
-    <a href="{{ url_for('routes.project_view', project_id=project.id) }}" class="hover:text-indigo-600">{{ project.name }}</a>
-    <span class="mx-2">›</span>
-    <span>{{ selected_task.name }}</span>
-  </div>
-  
-  <!-- Task Header -->
-  <div class="mb-6">
-    <h2 class="text-2xl font-bold text-gray-800 mb-3">{{ selected_task.name }}</h2>
-    <div class="flex space-x-3">
-      <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
-        {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
-      </span>
-      {% if task.category %}
-      <span class="category-badge">{{ task.category }}</span>
-      {% endif %}
-    </div>
-  
-  <!-- Assignee info in top right -->
-  <div class="absolute top-6 right-6 flex items-center">
-    <div class="avatar {{ 'avatar-jd' if 'John' in selected_task.collabs else 'avatar-bj' }}">
-      {{ selected_task.collabs[0:2] if selected_task.collabs else 'JD' }}
-    </div>
-    <div class="ml-2">
-      <div class="text-sm font-medium">{{ selected_task.collabs }}</div>
-      <div class="text-xs text-gray-500">{{ selected_task.collabs }}@example.com</div>
-    </div>
-  </div>
-  
-  <!-- Description -->
-  <div class="mb-8">
-    <h3 class="text-lg font-medium text-gray-800 mb-2">Description</h3>
-    <div class="bg-gray-50 p-4 rounded-lg">
-      <p class="text-gray-700">{{ selected_task.description or 'No description provided.' }}</p>
-    </div>
-  </div>
-  
-  <!-- Subtasks -->
-  <div class="mb-8">
-    <h3 class="text-lg font-medium text-gray-800 mb-3">Subtasks</h3>
-    
-    {% if selected_task.subtask_list %}
-      <div class="space-y-4">
-        {% for subtask in selected_task.subtask_list %}
-        <div class="flex items-center justify-between">
-          <div class="flex items-center">
-            <div class="subtask-icon {{ 'subtask-complete' if subtask.status == 1 else 'subtask-incomplete' }}">
-              {% if subtask.status == 1 %}✓{% else %}-{% endif %}
-            </div>
-            <span class="text-gray-800">{{ subtask.name }}</span>
-          </div>
-          
-          <a href="#" class="text-indigo-600 hover:text-indigo-800 text-sm view-files-btn" data-subtask-id="{{ subtask.id }}">
-            View Files
-          </a>
-        </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <p class="text-gray-500">No subtasks yet.</p>
-    {% endif %}
-  </div>
-  
-  <!-- Upload Evidence -->
-  <div class="mb-4">
-    <h3 class="text-lg font-medium text-gray-800 mb-3">Upload Evidence</h3>
-    
-    <div class="drop-zone" id="drop-zone">
-      <div class="mb-3">
-        <!-- Upload icon -->
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
-        </svg>
-      </div>
-      <p class="text-gray-600 mb-1">Drag files here or click to upload</p>
-      <p class="text-gray-500 text-sm">Accepted formats: PNG, JPG, PDF, TXT, ZIP (Max: 10MB)</p>
-    </div>
-    
-    <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
-      Upload & Complete
-    </button>
-  </div>
-</div>
+<!-- Task detail HTML here -->
+{% endif %}
 
-<!-- Evidence Files Modal (hidden by default) - FIXED: Close button positioned correctly -->
+<!-- Evidence Files Modal (hidden by default) -->
 <div class="evidence-modal hidden" id="evidence-modal">
-  <div class="evidence-modal-content relative"> <!-- Added relative positioning -->
+  <div class="evidence-modal-content relative">
     <!-- Modal Header -->
     <div class="flex justify-between items-start mb-4">
       <div>
         <h3 class="text-lg font-bold text-gray-800">Evidence Files</h3>
         <p class="text-sm text-gray-500" id="evidence-modal-title">Task: Implement responsive design > Create mobile navigation menu</p>
       </div>
-      <button class="modal-close-btn" id="close-evidence-modal"> <!-- Updated class -->
+      <button class="modal-close-btn" id="close-evidence-modal">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
@@ -463,39 +240,7 @@
     
     <!-- File List -->
     <div class="mb-6">
-      <div class="file-item">
-        <div class="file-icon">PDF</div>
-        <div class="flex-1">
-          <div class="text-sm font-medium text-gray-800">mobile-nav-code.pdf</div>
-          <div class="text-xs text-gray-500">245KB • Uploaded by John Doe on Apr 2, 2025</div>
-        </div>
-        <button class="text-gray-400 hover:text-gray-600 ml-4">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-          </svg>
-        </button>
-      </div>
-      
-      <div class="file-item">
-        <div class="file-icon">IMG</div>
-        <div class="flex-1">
-          <div class="text-sm font-medium text-gray-800">nav-screenshot.jpg</div>
-          <div class="text-xs text-gray-500">1.2MB • Uploaded by John Doe on Apr 2, 2025</div>
-        </div>
-        <div class="flex items-center">
-          <button class="text-gray-400 hover:text-gray-600 mx-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-            </svg>
-          </button>
-          <button class="text-gray-400 hover:text-gray-600">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-            </svg>
-          </button>
-        </div>
-      </div>
+      <!-- File items here -->
     </div>
     
     <!-- Upload Area -->
@@ -508,275 +253,7 @@
     </button>
   </div>
 </div>
-{% endif %}
 {% endblock %}
 
 {% block extra_js %}
-<script src="{{ url_for('static', filename='js/projectdetails.js') }}"></script> 
-<script src="{{ url_for('static', filename='js/invite.js') }}"></script> 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  // Apply all event listeners after DOM has loaded
-  initializeAddTaskButton();
-  initializeTaskCompleteButton();
-  initializeEvidenceModal();
-  initializeFileUpload();
-  initializeInviteModal(); // Added function to handle invite modal
-});
-
-// Global variable for the task modal
-let taskModal;
-let inviteModal;
-
-// Initialize the Add Task button and modal
-function initializeAddTaskButton() {
-  const addTaskBtn = document.getElementById('newTaskBtn');
-  taskModal = document.getElementById('modalAddTask');
-  const closeModalBtn = document.getElementById('closeModalBtn');
-  
-  if (addTaskBtn && taskModal) {
-    addTaskBtn.addEventListener('click', function() {
-      taskModal.classList.remove('hidden');
-      taskModal.style.display = 'flex';
-    });
-    
-    if (closeModalBtn) {
-      closeModalBtn.addEventListener('click', function() {
-        taskModal.classList.add('hidden');
-        taskModal.style.display = 'none';
-      });
-    }
-  }
-}
-
-// Initialize the Invite modal
-function initializeInviteModal() {
-  const inviteBtn = document.getElementById('openInviteModalBtn');
-  inviteModal = document.getElementById('inviteModal');
-  const closeInviteModalBtn = document.getElementById('closeInviteModalBtn');
-  
-  if (inviteBtn && inviteModal) {
-    inviteBtn.addEventListener('click', function() {
-      inviteModal.classList.remove('hidden');
-      inviteModal.style.display = 'flex';
-    });
-    
-    if (closeInviteModalBtn) {
-      closeInviteModalBtn.addEventListener('click', function() {
-        inviteModal.classList.add('hidden');
-        inviteModal.style.display = 'none';
-      });
-    }
-  }
-}
-
-// Handle form submission
-$(document).ready(function() {
-  $('#addTaskForm').on('submit', function(e) {
-    e.preventDefault();
-    console.log('Form submitted!');
-    
-    $.ajax({
-      url: '/submitAddTask',
-      type: 'POST',
-      data: $(this).serialize(),
-      success: function(response) {
-        if (taskModal) {
-          taskModal.classList.add('hidden');
-          taskModal.style.display = 'none';
-        }
-        location.reload(); // Refresh to show the new project
-      },
-      error: function(error) {
-        alert('Error adding task: ' + error.responseText);
-      }
-    });
-  });
-  
-  /*
-  $('#inviteUserForm').on('submit', function(e) {
-    e.preventDefault();
-    
-    $.ajax({
-      url: '/inviteUser',
-      type: 'POST',
-      data: $(this).serialize(),
-      success: function(response) {
-        if (inviteModal) {
-          inviteModal.classList.add('hidden');
-          inviteModal.style.display = 'none';
-        }
-        alert('Invitation sent successfully!');
-      },
-      error: function(error) {
-        alert('Error sending invitation: ' + error.responseText);
-      }
-    });
-  }); */
-}); 
-
-// Initialize the Complete Task button
-function initializeTaskCompleteButton() {
-  const completeTaskBtn = document.getElementById('complTaskBtn');
-  
-  if (completeTaskBtn) {
-    completeTaskBtn.addEventListener('click', function() {
-      $.ajax({
-        url: '/completeTask',
-        type: 'POST',
-        data: {task_id: this.dataset.taskId},
-        success: function(response) {
-          location.reload(); // Refresh to show the updated task status
-        },
-        error: function(error) {
-          alert('Error completing task: ' + error.responseText);
-        }
-      });
-    });
-  }
-}
-
-// Initialize the Evidence Modal
-function initializeEvidenceModal() {
-  const viewFilesButtons = document.querySelectorAll('.view-files-btn');
-  const evidenceModal = document.getElementById('evidence-modal');
-  const closeEvidenceModal = document.getElementById('close-evidence-modal');
-  
-  viewFilesButtons.forEach(button => {
-    button.addEventListener('click', function(e) {
-      e.preventDefault();
-      const subtaskId = this.dataset.subtaskId;
-      const subtaskName = this.closest('div').querySelector('span').textContent.trim();
-      
-      // Update modal title
-      if (document.getElementById('evidence-modal-title')) {
-        document.getElementById('evidence-modal-title').textContent = `Task: ${document.title} > ${subtaskName}`;
-      }
-      
-      // Show modal
-      if (evidenceModal) {
-        evidenceModal.classList.remove('hidden');
-      }
-    });
-  });
-  
-  if (closeEvidenceModal && evidenceModal) {
-    closeEvidenceModal.addEventListener('click', function() {
-      evidenceModal.classList.add('hidden');
-    });
-  }
-}
-
-// Initialize File Upload functionality
-function initializeFileUpload() {
-  const dropZones = document.querySelectorAll('.drop-zone');
-  
-  dropZones.forEach(zone => {
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      zone.addEventListener(eventName, preventDefaults, false);
-    });
-    
-    function preventDefaults(e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    
-    ['dragenter', 'dragover'].forEach(eventName => {
-      zone.addEventListener(eventName, highlight, false);
-    });
-    
-    ['dragleave', 'drop'].forEach(eventName => {
-      zone.addEventListener(eventName, unhighlight, false);
-    });
-    
-    function highlight() {
-      zone.classList.add('border-indigo-500', 'bg-indigo-50');
-    }
-    
-    function unhighlight() {
-      zone.classList.remove('border-indigo-500', 'bg-indigo-50');
-    }
-    
-    zone.addEventListener('drop', handleDrop, false);
-    
-    function handleDrop(e) {
-      const files = e.dataTransfer.files;
-      // Handle file upload
-      console.log('Files dropped:', files);
-      
-      if (files.length > 0) {
-        alert(`${files.length} file(s) selected for upload`);
-       
-      }
-    }
-    
-    zone.addEventListener('click', function() {
-      const fileInput = document.createElement('input');
-      fileInput.type = 'file';
-      fileInput.multiple = true;
-      fileInput.click();
-      
-      fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-          console.log('Files selected:', this.files);
-          alert(`${this.files.length} file(s) selected for upload`);
-          
-        }
-      });
-    });
-  });
-}
-
-fix/task-approval-workflow
-// Direct revert task function that can be called from inline onclick
-function revertTask(event, taskId) {
-  // Stop the event from bubbling up to parent elements
-  event.preventDefault();
-  event.stopPropagation();
-  
-  if (confirm('Are you sure you want to revert this task to in-progress status?')) {
-    fetch('/revertTask', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      body: new URLSearchParams({'task_id': taskId})
-    })
-    .then(response => response.json())
-    .then(data => {
-      if (data.status === 'success') {
-        // Show a quick success message
-        alert('Task reverted successfully!');
-        location.reload();
-      } else {
-        alert('Error reverting task: ' + (data.message || 'Unknown error'));
-      }
-    })
-    .catch(error => {
-      alert('Connection error. Please try again.');
-    });
-  }
-  
-  // Return false to prevent any navigation
-  return false;
-}
-
-// Set min and max date for taskDueDate input
-document.addEventListener('DOMContentLoaded', function() {
-  var dateInput = document.getElementById('taskDueDate');
-  if (dateInput) {
-    // Set min to today
-    var today = new Date();
-    var yyyy = today.getFullYear();
-    var mm = String(today.getMonth() + 1).padStart(2, '0');
-    var dd = String(today.getDate()).padStart(2, '0');
-    var minDate = yyyy + '-' + mm + '-' + dd;
-    dateInput.setAttribute('min', minDate);
-
-    // Set max to project due date (from template variable)
-    var projectDueDate = "{{ project.dueDate }}";
-    if (projectDueDate) {
-      dateInput.setAttribute('max', projectDueDate);
-    }
-  }
-});
-</script>
 {% endblock %}
