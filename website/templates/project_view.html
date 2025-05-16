@@ -205,17 +205,28 @@
           <div class="subtask-icon {{ 'subtask-complete' if subtask.status == 1 else 'subtask-incomplete' }}">
             {% if subtask.status == 1 %}✓{% else %}-{% endif %}
           </div>
-          <span class="text-sm text-gray-700">{{ subtask.name }}</span>
+          <span class="text-sm text-gray-700 ml-2">{{ subtask.name }}</span>
         </div>
         {% endfor %}
       {% endif %}
     </div>
     
-    <!-- View Details Link -->
-    <a href="{{ url_for('routes.task_detail', task_id=task.id) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View Details →</a>
-  </div>
-  {% endfor %}
-</div>
+    <!-- View Details Link and Delete Subtask Button beside it -->
+    <div class="flex items-center justify-between mt-4">
+      <a href="{{ url_for('routes.task_detail', task_id=task.id) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+        View Details →
+      </a>
+      <button class="delete-task-btn bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs flex items-center"
+          data-task-id="{{ task.id }}">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+        Delete
+      </button>
+    </div>
+    </div>
+    {% endfor %}
+    </div>
 
 <!-- Task Detail View (visible when viewing a single task) -->
 {% if selected_task %}

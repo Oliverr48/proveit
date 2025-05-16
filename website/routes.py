@@ -1005,3 +1005,39 @@ def delete_subtask(subtask_id):
     db.session.delete(subtask)
     db.session.commit()
     return jsonify({'status': 'success'})
+
+@routes.route('/delete_task/<int:task_id>', methods=['POST'])
+@login_required
+def delete_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    project = Project.query.get(task.parentProject)
+
+    # Security check: only project owner or collaborator can delete
+    if not (project.owner_id == current_user.id or current_user in project.collaborators):
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
+
+    # Delete all files for this task (including files for subtasks)
+    # 1. Delete files attached directly to the task
+    task_files = TaskFile.query.filter_by(task_id=task.id).all()
+    for file in task_files:
+        try:
+            os.remove(file.filepath)
+        except Exception:
+            pass
+        db.session.delete(file)
+
+    # 2. Delete all subtasks and their files
+    subtasks = Subtask.query.filter_by(taskId=task.id).all()
+    for subtask in subtasks:
+        for file in subtask.files:
+            try:
+                os.remove(file.filepath)
+            except Exception:
+                pass
+            db.session.delete(file)
+        db.session.delete(subtask)
+
+    # 3. Delete the task itself
+    db.session.delete(task)
+    db.session.commit()
+    return jsonify({'status': 'success'})
