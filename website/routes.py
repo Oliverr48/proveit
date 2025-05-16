@@ -11,7 +11,7 @@ routes = Blueprint('routes', __name__)
 
 
 
-
+# Method for getting projects and invites for the base template, displaying notifications 
 def getForBase():
     # Get projects owned by the current user or where they are a collaborator
     projects = Project.query.filter(
@@ -52,8 +52,6 @@ def getForBase():
         Activity.userId == current_user.id
     ).all()
     
-   
-
     return projects, invites, pending_approvals
 
 
@@ -230,9 +228,11 @@ def projects():
     today = date.today().isoformat()
     return render_template('project.html', projects=projects, comTasks=comTasks, today=today, invites=invites, totalTasks=totalTasks, pending_approvals=pending_approvals, allPending=allPending)
 
+
+# Function handling form submission to the new project table
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
-    print("Are we here???")
+    #print("Are we here???")
     # Get the form data
     name = request.form['projectName']
     description = request.form['projectDescription']
@@ -265,6 +265,7 @@ def submitNewProject():
 
     return jsonify({'message': 'Project created successfully'})
 
+# Same as above; for tasks assigned to individual projects 
 @routes.route('/submitAddTask', methods=['POST'])
 def submitAddTask():
     # Get the form data
@@ -372,6 +373,7 @@ def completeTask():
         'approval_status': task.approval_status
     })
 
+# We render the same template but change info based on task_id
 @routes.route('/task/<int:task_id>')
 @login_required
 def task_detail(task_id):
