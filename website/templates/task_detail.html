@@ -4,27 +4,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/task-detail.css') }}">
-<style>
-  /* Status indicator for pending approval */
-  .status-pending-approval {
-    background-color: #fffbeb;
-    color: #b45309;
-    padding: 0.25rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
-  }
-  
-  /* Pending approval notification banner */
-  .pending-approval-banner {
-    background-color: #fffbeb;
-    border-left: 4px solid #b45309;
-    color: #92400e;
-    padding: 0.75rem 1rem;
-    margin-bottom: 1.5rem;
-    border-radius: 0.25rem;
-  }
-</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/task-management.css') }}">
 {% endblock %}
 
 {% block content %}

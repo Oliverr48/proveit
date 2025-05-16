@@ -242,13 +242,6 @@
     
     <!-- View Details Link -->
     <a href="{{ url_for('routes.task_detail', task_id=task.id) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View Details →</a>
-    
-    <!-- Pending approval badge - top right -->
-    {% if task.status == 1 and task.approval_status == 0 and project.approval_required %}
-    <div class="absolute top-2 right-2 bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-0.5 rounded-full">
-      Awaiting Approval
-    </div>
-    {% endif %}
   </div>
   {% endfor %}
 </div>
