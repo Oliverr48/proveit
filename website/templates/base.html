@@ -56,9 +56,13 @@
           <span>Projects</span>
           <span class="ml-auto bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">{{projects|length}}</span>
         </a>
-        <a href="/inbox" class="nav-item flex items-center px-4 py-3 text-slate-700 {% if request.path == '/team' %}active{% endif %}">
-          <i class="fas fa-users mr-3 {% if request.path == '/team' %}text-indigo-600{% else %}text-slate-500{% endif %}"></i>
-          <span>Invites</span>
+        <a href="/inbox" class="nav-item flex items-center px-4 py-3 text-slate-700 {% if request.path == '/inbox' %}active{% endif %}">
+          <i class="fas fa-bell mr-3 {% if request.path == '/inbox' %}text-indigo-600{% else %}text-slate-500{% endif %}"></i>
+          <span>Notifications</span>
+          {% set pending_count = invites|length + (pending_approvals|length if pending_approvals is defined else 0) %}
+          {% if pending_count > 0 %}
+          <span class="ml-auto bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">{{pending_count}}</span>
+          {% endif %}
         </a>
         <a href="/analytics" class="nav-item flex items-center px-4 py-3 text-slate-700 {% if request.path == '/analytics' %}active{% endif %}">
           <i class="fas fa-chart-bar mr-3 {% if request.path == '/analytics' %}text-indigo-600{% else %}text-slate-500{% endif %}"></i>

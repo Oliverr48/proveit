@@ -63,13 +63,44 @@ def inbox():
         User.username.label('inviter_name'),
         Activity.id.label('invite_id')
     ).join(Project, Project.id == Activity.projectId
-    ).join(User, User.id == Project.owner_id  # Join with the project owner
+    ).join(User, User.id == Project.owner_id
     ).filter(
         Activity.action == 'Invite sent',
         Activity.userId == current_user.id
     ).all()
 
-    return render_template('inbox.html', invites=invites)
+    # For project owners: Fetch tasks pending approval
+    pending_approvals = []
+    # Check if user owns any projects
+    if Project.query.filter_by(owner_id=current_user.id).first():
+        # Fixed query to properly join with User and add error handling
+        try:
+            pending_approvals = db.session.query(
+                Task.id.label('task_id'),
+                Task.name.label('task_name'),
+                Project.name.label('project_name'),
+                User.username.label('completed_by')
+            ).join(
+                Project, Project.id == Task.parentProject
+            ).join(
+                User, User.id == Task.user_id
+            ).filter(
+                Project.owner_id == current_user.id,
+                Task.status == 1,
+                Task.approval_status == 0
+            ).all()
+            
+            # Log for debugging
+            print(f"Found {len(pending_approvals)} tasks pending approval")
+            
+        except Exception as e:
+            # Log the error
+            print(f"Error fetching pending approvals: {str(e)}")
+            pending_approvals = []
+
+    return render_template('inbox.html', 
+                          invites=invites, 
+                          pending_approvals=pending_approvals)
 
 @routes.route('/dashboard')
 @login_required
@@ -146,11 +177,14 @@ def submitNewProject():
 @routes.route('/submitAddTask', methods=['POST'])
 def submitAddTask():
     # Get the form data
-    print("We are here in the task submit bit!")
     name = request.form['taskName']
-    description = request.form['taskDescription']  # Changed from taskCollabs to taskDescription
-    dueDate = request.form['taskDueDate']
-    parentProject = request.form.get('project_id')  # Get the parent project ID from the form
+    description = request.form['taskDescription']
+    
+    # Convert string date to Python datetime object
+    dueDate_str = request.form['taskDueDate']
+    dueDate = datetime.strptime(dueDate_str, '%Y-%m-%d')
+    
+    parentProject = request.form.get('project_id')
 
     project = Project.query.get_or_404(parentProject)
     project.tasksActive += 1  # Increment the active tasks count for the project
@@ -158,9 +192,9 @@ def submitAddTask():
     # Create a new task instance
     new_task = Task(
         name=name,
-        description=description,  # Store the description in the description field
-        collabs="Unassigned",  # Set a default value as collabs field is non-nullable
-        dueDate=dueDate,
+        description=description,
+        collabs="Unassigned",
+        dueDate=dueDate,  # Now using the datetime object
         parentProject=parentProject,
         status=0  
     )
@@ -175,8 +209,6 @@ def submitAddTask():
         action=f"New task added"
     )
 
-    print("New task created: ", new_task.name, new_task.description, new_task.dueDate, new_task.parentProject)
-    # Add the new task to the database session and commit
     db.session.add(new_activity)
     db.session.commit()
 
@@ -200,26 +232,52 @@ def project_view(project_id):
         
     return render_template('project_view.html', project=project, tasks=tasks)
 
+# In routes.py - Update the completeTask route
 @routes.route('/completeTask', methods=['POST'])
+@login_required
 def completeTask():
     task_id = request.form.get('task_id')
     task = Task.query.get_or_404(task_id)
     project = Project.query.get_or_404(task.parentProject)
 
+    # Update the task status to completed
+    task.status = 1
+    
+    # Set the user who completed the task
+    task.user_id = current_user.id
+    
+    # Debug log
+    print(f"Project approval required: {project.approval_required}")
+    print(f"Current user is owner: {project.owner_id == current_user.id}")
+    
+    # Set approval status based on project settings and who completed the task
+    requires_approval = project.approval_required and project.owner_id != current_user.id
+    
+    if requires_approval:
+        task.approval_status = 0  # Pending approval
+        action_text = "Task marked complete - awaiting approval"
+    else:
+        task.approval_status = 1  # Auto-approved
+        project.tasksActive -= 1
+        project.tasksCompleted += 1
+        action_text = "Task completed and approved"
 
+    # Create activity record
     completed_activity = Activity(
         userId=current_user.id,
         projectId=project.id,
         taskId=task.id,
-        action=f"Task completed!"
+        action=action_text
     )
-    # Update the task status to completed
-    task.status = 1
-    project.tasksActive -= 1
-    project.tasksCompleted += 1
+    
     db.session.add(completed_activity)
     db.session.commit()
-    return jsonify({'message': 'Task completed successfully'})
+    
+    return jsonify({
+        'message': action_text,
+        'requires_approval': project.approval_required and project.owner_id != current_user.id,
+        'approval_status': task.approval_status
+    })
 
 @routes.route('/task/<int:task_id>')
 @login_required
@@ -698,3 +756,120 @@ def assign_task():
     db.session.commit()
     
     return jsonify({'status': 'success'})
+
+@routes.route('/approveTask', methods=['POST'])
+@login_required
+def approveTask():
+    task_id = request.form.get('task_id')
+    task = Task.query.get_or_404(task_id)
+    project = Project.query.get_or_404(task.parentProject)
+    
+    # Security check - only owner can approve
+    if project.owner_id != current_user.id:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
+        flash('You are not authorized to approve this task', 'error')
+        return redirect(url_for('routes.inbox'))
+        
+    # Update counters and approval status
+    if task.approval_status == 0:  # Only update if pending
+        task.approval_status = 1
+        project.tasksActive -= 1
+        project.tasksCompleted += 1
+        
+        # Create activity
+        activity = Activity(
+            userId=current_user.id,
+            projectId=project.id,
+            taskId=task.id,
+            action="Task approved"
+        )
+        db.session.add(activity)
+        db.session.commit()
+    
+    # Check if it's an AJAX request or a regular form submission
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'status': 'success'})
+    
+    # Regular form submission - redirect back to inbox
+    return redirect(url_for('routes.inbox'))
+
+@routes.route('/rejectTask', methods=['POST'])
+@login_required
+def rejectTask():
+    task_id = request.form.get('task_id')
+    task = Task.query.get_or_404(task_id)
+    project = Project.query.get_or_404(task.parentProject)
+    
+    # Security check - only owner can reject
+    if project.owner_id != current_user.id:
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
+        flash('You are not authorized to reject this task', 'error')
+        return redirect(url_for('routes.inbox'))
+        
+    # Reset task status to in progress
+    if task.approval_status == 0:  # Only update if pending
+        task.approval_status = 2  # Rejected
+        task.status = 0  # Back to in progress
+        
+        # Create activity
+        activity = Activity(
+            userId=current_user.id,
+            projectId=project.id,
+            taskId=task.id,
+            action="Task completion rejected"
+        )
+        db.session.add(activity)
+        db.session.commit()
+    
+    # Check if it's an AJAX request or a regular form submission
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'status': 'success'})
+    
+    # Regular form submission - redirect back to inbox
+    return redirect(url_for('routes.inbox'))
+
+@routes.route('/toggle_project_approval/<int:project_id>', methods=['POST'])
+@login_required
+def toggle_project_approval(project_id):
+    project = Project.query.get_or_404(project_id)
+    
+    # Security check - only owner can change settings
+    if project.owner_id != current_user.id:
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
+        
+    # Toggle the setting
+    project.approval_required = not project.approval_required
+    db.session.commit()
+    
+    return jsonify({'status': 'success', 'approval_required': project.approval_required})
+
+@routes.route('/revertTask', methods=['POST'])
+@login_required
+def revertTask():
+    task_id = request.form.get('task_id')
+    task = Task.query.get_or_404(task_id)
+    project = Project.query.get_or_404(task.parentProject)
+    
+    # If task was completed and approved, adjust project counters
+    if task.status == 1 and task.approval_status == 1:
+        project.tasksActive += 1
+        project.tasksCompleted -= 1
+        
+    # Reset task to in-progress state
+    task.status = 0
+    task.approval_status = 0
+    
+    # Create activity record
+    revert_activity = Activity(
+        userId=current_user.id,
+        projectId=project.id,
+        taskId=task.id,
+        action="Task reverted to in-progress"
+    )
+    
+    db.session.add(revert_activity)
+    db.session.commit()
+    
+    return jsonify({'status': 'success', 'message': 'Task reverted to in-progress'})

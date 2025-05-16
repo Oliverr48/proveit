@@ -257,11 +257,27 @@
       {% endif %}
     </button>
   </div>
-  <div class="flex space-x-3">
+  <div class="flex space-x-3 flex-wrap items-center">
+    <!-- Status badge -->
     <span class="status-badge {{ 'status-completed' if task.status == 1 else 'status-in-progress' }}">
       {% if task.status == 1 %}✓ Completed{% else %}● In Progress{% endif %}
     </span>
-    <span class="category-badge">{{ task.category or 'Frontend' }}</span>
+    
+    <!-- Category badge - only shown if category exists -->
+    {% if task.category %}
+    <span class="category-badge">{{ task.category }}</span>
+    {% endif %}
+    
+    <!-- Revert button - only shown if task is completed -->
+    {% if task.status == 1 %}
+    <button class="revertTaskBtn ml-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded-lg text-xs flex items-center" data-task-id="{{ task.id }}">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1z" clip-rule="evenodd"/>
+        <path fill-rule="evenodd" d="M10.146 8.146a.5.5 0 01.708 0L14 11.293l3.146-3.147a.5.5 0 01.708.708l-3.5 3.5a.5.5 0 01-.708 0l-3.5-3.5a.5.5 0 010-.708z" clip-rule="evenodd"/>
+      </svg>
+      Revert to In-Progress
+    </button>
+    {% endif %}
     
     <!-- Assignment badge -->
     {% if task.collabs and task.collabs != "Unassigned" %}
