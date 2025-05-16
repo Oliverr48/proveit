@@ -173,7 +173,7 @@ def dashboard():
         [project.id for project in projects]
     )).all()
 
-    recentActivity = Activity.query.order_by(Activity.timestamp.desc()).limit(5).all()
+    recentActivity = Activity.query.filter(Activity.projectId.in_([project.id for project in projects])).order_by(Activity.timestamp.desc()).limit(5).all()
     upcomingTasks = Task.query.filter(Task.parentProject.in_([project.id for project in projects]), Task.status == 0, Task.dueDate >= datetime.now()).order_by(Task.dueDate).limit(4).all()
 
     # Get the number of evidence files uploaded by the user 
@@ -210,34 +210,25 @@ def projects():
         [project.id for project in projects]
     )).all()
 
-    pending_approvals = db.session.query(
-                Task.id.label('task_id'),
-                Task.name.label('task_name'),
-                Project.name.label('project_name'),
-                User.username.label('completed_by')
-            ).join(
-                Project, Project.id == Task.parentProject
-            ).join(
-                User, User.id == Task.user_id
-            ).filter(
-                Project.owner_id == current_user.id,
-                Task.status == 1,
-                Task.approval_status == 0
-            ).all()
-    # Fetch invites for the current user
-    invites = db.session.query(
-        Project.name.label('project_name'),
-        User.username.label('inviter_name'),
-        Activity.id.label('invite_id')
-    ).join(Project, Project.id == Activity.projectId
-    ).join(User, User.id == Project.owner_id
+    allPending = db.session.query(
+    Task.id.label('task_id'),
+    Task.name.label('task_name'),
+    Project.name.label('project_name'),
+    User.username.label('completed_by')
+    ).join(
+        Project, Project.id == Task.parentProject
+    ).join(
+        User, User.id == Task.user_id
     ).filter(
-        Activity.action == 'Invite sent',
-        Activity.userId == current_user.id
+        (Project.owner_id == current_user.id) | 
+        (Project.collaborators.any(id=current_user.id)),
+        Project.approval_required == True,
+        Task.status == 1,  # completed
+        Task.approval_status == 0  # pending approval  
     ).all()
 
     today = date.today().isoformat()
-    return render_template('project.html', projects=projects, comTasks=comTasks, today=today, invites=invites, totalTasks=totalTasks, pending_approvals=pending_approvals)
+    return render_template('project.html', projects=projects, comTasks=comTasks, today=today, invites=invites, totalTasks=totalTasks, pending_approvals=pending_approvals, allPending=allPending)
 
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
