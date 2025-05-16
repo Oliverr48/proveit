@@ -513,14 +513,17 @@ def team_performance_analytics():
     contributor_tasks = {}
 
     for project in projects:
+
         tasks = Task.query.filter_by(parentProject=project.id).all()
 
         for task in tasks:
             if task.collabs:
+                print("COLLABS LIST:", task.collabs)
                 contributor_usernames = [name.strip() for name in task.collabs.split(',') if name.strip()]
                 for username in contributor_usernames:
                     if task.status == 1:
                         contributor_tasks[username] = contributor_tasks.get(username, 0) + 1
+            
 
     # Now convert usernames to user info
     contributor_data = []
