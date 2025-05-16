@@ -1,52 +1,75 @@
 # ProveIt
 
-ProveIt is a Flask-based web application for project tracking, task and team management, and contribution. It allows you to work together with team members, documenting your progress as you tick off goals. 
-## Core Technical Features
-- Flask-implemented web interface
-- SQLAlchemy Database Implementation
-- Supports Database Migration 
-- Comprehensive Test Suite with Selenium
+ProveIt is a sophisticated Flask-based project management platform designed for seamless team collaboration, task tracking, and evidence-based progress documentation. The system empowers teams to break down complex projects into manageable tasks, assign responsibilities, and document completion with verifiable evidence.
+🌟 Key Features
 
-## Pros of ProveIt
-- Sleek and simple UI to make complex tasks approachable
-- Task, subtask and project layers to break down your goals
-- User-sharable data and project access
-- An analytics page to stay on top of your contributions
+Hierarchical Project Organization: Structure work with projects, tasks, and subtasks
+Task Approval Workflow: Complete tasks with evidence that project owners can approve or reject
+Team Collaboration: Invite team members to projects with specific permissions
+Evidence Documentation: Upload and manage files as proof of task completion
+Real-time Analytics: Track project progress, team performance, and contribution metrics
+Notification System: Stay updated with a unified notifications area for invites and approvals
+Responsive Design: Access your projects on any device with a clean, intuitive interface
 
-## Installation
+💻 Technical Architecture
 
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install the requirements for ProveIt after cloning into the repository:
+Backend: Python Flask with blueprints for modular organization
+Database: SQLAlchemy ORM with migration support
+Frontend: Tailwind CSS for responsive and modern UI components
+Authentication: Flask-Login for secure user management
+Testing: Comprehensive test suite with Selenium for E2E testing
+File Management: Secure file uploads with type validation and storage
 
-```bash
-# Clone the repository
+🚀 Getting Started
+Prerequisites
+
+Python 3.9 or higher
+pip (Python package manager)
+Git
+
+Installation
+bash# Clone the repository
 git clone https://github.com/Oliverr48/proveit
 cd proveit
 
 # Create a virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Activate the virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
+# Set up the database
+flask db upgrade
+Running the Application
+bash# Start the development server
+python app.py
 
-```
+# The application will be available at http://127.0.0.1:5000/
+📱 Using ProveIt
 
-## Usage - Running the Server
-Simple: all you need to do is start the server from the proveit directory through the app file:
-```python
-python3 app.py 
-```
+Sign Up & Login: Create your account and access your personalized dashboard
+Create a Project: Navigate to Projects and set up your first project with deadlines
+Add Tasks: Break down your project into manageable tasks and subtasks
+Invite Collaborators: Add team members to contribute to your projects
+Track Progress: Complete tasks, upload evidence, and approve contributions
+Analyze Performance: Visit the Analytics page to visualize project progress and team performance
 
-## Getting the Most Out of Proveit
+🔧 Advanced Features
 
-Once you've signed up and logged into your dashboard, getting started with Proveit is simple! Simply navigate to the 'Projects' page and follow the easy-to use UI to create your first goal and start setting your deadlines!
+Task Evidence: Upload files to document and verify task completion
+Task Reversion: Move completed tasks back to in-progress when needed
+Approval System: Ensure quality with owner approval workflows
+Performance Metrics: Track time-to-completion and team contribution statistics
 
-Inside the project, you're able to create and assign tasks, invite users, and upload files to document your progress. *You're not just a contributor with ProveIt:* it helps you delegate and build as a team.
-Note that to invite your team members into your ProveIt project, they'll have to have a ProveIt account set up as well. 
+👥 Development Team
+IDName23197683Oliver King23959437Michelle Prayogo24128968David Pang23724703Sam Dockery
+📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
 
-To see how well you're contributing and getting your tasks done, simply navigate to the 'Analytics'
-
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
+Made with ❤️ by Team ProveIt
