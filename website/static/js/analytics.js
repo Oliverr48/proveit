@@ -168,6 +168,7 @@ async function initTopContributorsChart() {
     name: item.full_name,
     taskCount: item.task_count,
     role: item.role,
+    username: item.username,
     color: Object.values(CHART_COLORS)[index % Object.values(CHART_COLORS).length],
     initials: item.full_name.split(' ').map(part => part[0]).join('')
   }));

@@ -3,7 +3,7 @@ from .models import Project, Task, User, Activity, Subtask, TaskFile
 from flask_login import login_required, current_user
 from . import db # Import the db object
 from website.models import Project, Task, Subtask  # Add Subtask here
-from datetime import datetime
+from datetime import datetime, date
 from werkzeug.utils import secure_filename
 import os
 
@@ -147,7 +147,18 @@ def projects():
         (Project.collaborators.any(id=current_user.id))
     ).all()
     
-    return render_template('project.html', projects=projects, user=current_user)
+    # Get completed tasks for the user's projects
+    comTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    ), Task.status == 1).all()
+    
+    # Get all tasks for the user's projects
+    totalTasks = Task.query.filter(Task.parentProject.in_(
+        [project.id for project in projects]
+    )).all()
+
+    today = date.today().isoformat()
+    return render_template('project.html', projects=projects, comTasks=comTasks, today=today)
 
 @routes.route('/submitNewProject', methods=['POST'])
 def submitNewProject():
@@ -168,8 +179,18 @@ def submitNewProject():
         owner_id=current_user.id  # Set the owner to the current user
     )
 
-    # Add the new project to the database session and commit
     db.session.add(new_project)
+    db.session.flush()  # Flush to get the new project's ID for the activity log
+
+    # Create an activity log for the project creation
+    new_activity = Activity(
+        userId=current_user.id,
+        projectId=new_project.id,
+        action=f"New project created: {name}"
+    )
+
+    # Add the new project to the database session and commit
+    db.session.add(new_activity)
     db.session.commit()
 
     return jsonify({'message': 'Project created successfully'})
@@ -561,14 +582,17 @@ def team_performance_analytics():
     contributor_tasks = {}
 
     for project in projects:
+
         tasks = Task.query.filter_by(parentProject=project.id).all()
 
         for task in tasks:
             if task.collabs:
+                print("COLLABS LIST:", task.collabs)
                 contributor_usernames = [name.strip() for name in task.collabs.split(',') if name.strip()]
                 for username in contributor_usernames:
                     if task.status == 1:
                         contributor_tasks[username] = contributor_tasks.get(username, 0) + 1
+            
 
     # Now convert usernames to user info
     contributor_data = []
@@ -577,7 +601,7 @@ def team_performance_analytics():
         if user:
             contributor_data.append({
                 'username': user.username,
-                'full_name': f'{user.first_name} {user.last_name}' if user.first_name else user.username,
+                'full_name': f'{user.firstName} {user.lastName}' if user.firstName else user.username,
                 'role': user.role if hasattr(user, 'role') else 'Team Member',
                 'task_count': task_count
             })

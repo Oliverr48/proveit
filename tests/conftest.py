@@ -11,7 +11,7 @@ def app():
     # Create a temporary file for the test database
     db_fd, db_path = tempfile.mkstemp()
     
-    app = create_app()
+    app = create_app(testing=True)
     app.config.update({
         'TESTING': True,
         'SQLALCHEMY_DATABASE_URI': f'sqlite:///{db_path}',

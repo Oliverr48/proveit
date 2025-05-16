@@ -256,7 +256,15 @@
       </div>
       <div class="mb-4">
         <label for="taskDueDate" class="block text-sm font-medium text-slate-700">Due Date</label>
-        <input type="date" id="taskDueDate" name="taskDueDate" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" required>
+        <input
+          type="date"
+          id="taskDueDate"
+          name="taskDueDate"
+          class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+          required
+          min="{{ today }}"
+          max="{{ project.dueDate }}"
+        >
       </div>
     <div class="mb-4">
       <label for="taskDescription" class="block text-sm font-medium text-slate-700">Description</label>
@@ -718,6 +726,7 @@ function initializeFileUpload() {
   });
 }
 
+fix/task-approval-workflow
 // Direct revert task function that can be called from inline onclick
 function revertTask(event, taskId) {
   // Stop the event from bubbling up to parent elements
@@ -749,5 +758,24 @@ function revertTask(event, taskId) {
   return false;
 }
 
+// Set min and max date for taskDueDate input
+document.addEventListener('DOMContentLoaded', function() {
+  var dateInput = document.getElementById('taskDueDate');
+  if (dateInput) {
+    // Set min to today
+    var today = new Date();
+    var yyyy = today.getFullYear();
+    var mm = String(today.getMonth() + 1).padStart(2, '0');
+    var dd = String(today.getDate()).padStart(2, '0');
+    var minDate = yyyy + '-' + mm + '-' + dd;
+    dateInput.setAttribute('min', minDate);
+
+    // Set max to project due date (from template variable)
+    var projectDueDate = "{{ project.dueDate }}";
+    if (projectDueDate) {
+      dateInput.setAttribute('max', projectDueDate);
+    }
+  }
+});
 </script>
 {% endblock %}
