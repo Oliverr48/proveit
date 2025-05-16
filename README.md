@@ -41,7 +41,7 @@ ProveIt is a sophisticated **Flask-based** project‑management platform that en
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/gitusername/proveit
+git clone https://github.com/Oliverr48/proveit
 cd proveit
 
 # 2. Create & activate a virtual environment
