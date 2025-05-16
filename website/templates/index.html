@@ -5,72 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ProveIt – Project Management Tool</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            indigo: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              400: '#818cf8',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca'
-            }
-          }
-        }
-      }
-    }
-  </script>
+  <script src="{{ url_for('static', filename='js/tailwind.config.js') }}"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-  <style>
-    .gradient-text {
-      background: linear-gradient(90deg, #4f46e5 0%, #7c3aed 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-    
-    .input-wrapper {
-      position: relative;
-      width: 100%;
-    }
-    
-    .input-icon {
-      position: absolute;
-      left: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #9ca3af;
-    }
-    
-    .input-field {
-      width: 100%;
-      padding: 0.75rem 0.75rem 0.75rem 2.5rem;
-      border: 1px solid #e5e7eb;
-      border-radius: 0.5rem;
-      font-size: 0.875rem;
-      transition: all 0.2s;
-    }
-    
-    .input-field:focus {
-      outline: none;
-      border-color: #4f46e5;
-      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-    }
-    
-    .feature-icon {
-      width: 3rem;
-      height: 3rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 0.5rem;
-      margin-bottom: 1rem;
-    }
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 </head>
 <body class="bg-gray-50 antialiased">
   <!-- Main container - full height and width -->
@@ -144,7 +82,7 @@
               <h2 class="text-2xl font-bold text-gray-800 mb-1">Welcome Back</h2>
               <p class="text-gray-500 text-sm mb-6">Sign in to your workspace</p>
               
-              <!-- Flash messages section (NEW) -->
+              <!-- Flash messages section -->
               <div class="mb-4">
                 {% with messages = get_flashed_messages(with_categories=true) %}
                   {% if messages %}
@@ -157,7 +95,7 @@
                 {% endwith %}
               </div>
               
-              <!-- Login form (MODIFIED to submit to backend) -->
+              <!-- Login form -->
               <form id="login-form" action="/login" method="POST" class="space-y-5" autocomplete="off">
                 <!-- Email field -->
                 <div>
@@ -240,13 +178,4 @@
 
       <!-- Footer -->
       <footer class="px-6 py-8 bg-gray-800 text-white mt-auto">
-        <div class="max-w-6xl mx-auto text-center">
-          <p class="text-sm text-gray-400">© 2025 ProveIt. All rights reserved.</p>
-        </div>
-      </footer>
-    </div>
-  </div>
-
-  <script src="{{ url_for('static', filename='js/login.js') }}"></script>
-</body>
-</html>
+        <div class="max-w-6xl mx-auto te
