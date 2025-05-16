@@ -44,6 +44,67 @@ function initializeInviteModal() {
   }
 }
 
+// Initialize the approval toggle
+function initializeApprovalToggle() {
+  const approvalToggle = document.getElementById('approvalToggle');
+  
+  if (approvalToggle) {
+    approvalToggle.addEventListener('change', function() {
+      const projectId = this.getAttribute('data-project-id');
+      
+      // Show loading state
+      const originalLabel = this.nextElementSibling.nextElementSibling.textContent;
+      this.nextElementSibling.nextElementSibling.textContent = 'Updating...';
+      
+      fetch(`/toggle_project_approval/${projectId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => response.json())
+      .then(data => {
+        // Restore original label
+        this.nextElementSibling.nextElementSibling.textContent = originalLabel;
+        
+        if (data.status === 'success') {
+          console.log(`Project approval requirement set to: ${data.approval_required}`);
+          // Optional: Brief feedback message that fades out
+          const feedbackText = data.approval_required ? 
+            "Task approval is now required" : 
+            "Task approval is no longer required";
+            
+          // Create a floating notification
+          const notification = document.createElement('div');
+          notification.textContent = feedbackText;
+          notification.className = 'fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg transition-opacity duration-500';
+          document.body.appendChild(notification);
+          
+          // Remove after 3 seconds
+          setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 500);
+          }, 3000);
+        } else {
+          console.error('Error:', data.message);
+          // Revert the toggle if there was an error
+          this.checked = !this.checked;
+          alert('Failed to update approval setting: ' + data.message);
+        }
+      })
+      .catch(error => {
+        // Restore original label
+        this.nextElementSibling.nextElementSibling.textContent = originalLabel;
+        
+        console.error('Error:', error);
+        // Revert the toggle if there was an error
+        this.checked = !this.checked;
+        alert('An error occurred while updating the approval setting.');
+      });
+    });
+  }
+}
+
 // Initialize the Complete Task button
 function initializeTaskCompleteButton() {
   const completeTaskBtn = document.getElementById('complTaskBtn');
@@ -193,6 +254,7 @@ document.addEventListener('DOMContentLoaded', function() {
   initializeEvidenceModal();
   initializeFileUpload();
   initializeInviteModal(); // Added function to handle invite modal
+  initializeApprovalToggle(); // Added function to handle approval toggle
 
   // Handle form submission
   $('#addTaskForm').on('submit', function(e) {
