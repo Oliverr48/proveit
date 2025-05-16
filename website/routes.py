@@ -518,9 +518,24 @@ def delete_project(project_id):
     if project.owner_id != current_user.id:
         return jsonify({'status': 'error', 'message': 'You are not authorized to delete this project'}), 403
 
-    # Delete the project and its associated tasks and activities
+    # Delete all evidence files (TaskFile) and remove files from disk
+    tasks = Task.query.filter_by(parentProject=project.id).all()
+    for task in tasks:
+        task_files = TaskFile.query.filter_by(task_id=task.id).all()
+        for task_file in task_files:
+            try:
+                os.remove(task_file.filepath)
+            except Exception:
+                pass  # Ignore if file doesn't exist
+            db.session.delete(task_file)
+        # Delete subtasks (if you want to be explicit)
+        Subtask.query.filter_by(taskId=task.id).delete()
+
+    # Delete tasks
     Task.query.filter_by(parentProject=project.id).delete()
+    # Delete activities
     Activity.query.filter_by(projectId=project.id).delete()
+    # Finally, delete the project
     db.session.delete(project)
     db.session.commit()
 
@@ -996,3 +1011,25 @@ def revertTask():
     db.session.commit()
     
     return jsonify({'status': 'success', 'message': 'Task reverted to in-progress'})
+
+@routes.route('/delete_subtask/<int:subtask_id>', methods=['POST'])
+@login_required
+def delete_subtask(subtask_id):
+    subtask = Subtask.query.get_or_404(subtask_id)
+    # Optional: Security check (ensure user has rights to delete)
+    task = Task.query.get(subtask.taskId)
+    project = Project.query.get(task.parentProject)
+    if not (project.owner_id == current_user.id or current_user in project.collaborators):
+        return jsonify({'status': 'error', 'message': 'Unauthorized'}), 403
+
+    # Delete all TaskFiles for this subtask and remove files from disk
+    for file in subtask.files:
+        try:
+            os.remove(file.filepath)
+        except Exception:
+            pass
+        db.session.delete(file)
+
+    db.session.delete(subtask)
+    db.session.commit()
+    return jsonify({'status': 'success'})
